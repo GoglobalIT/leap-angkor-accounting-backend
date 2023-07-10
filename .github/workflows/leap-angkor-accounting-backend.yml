@@ -1,0 +1,19 @@
+name: leap angkor accounting backend
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Nodejs ${{matrix.node-version}}
+      uses: actions/setup-node@v1
+      with: 
+        node-version: ${{matrix.node-version}}
+    - name: install and build
+      run:
+        npm install --force
+        npm run build
+
+        
