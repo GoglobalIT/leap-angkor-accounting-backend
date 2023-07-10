@@ -27,7 +27,7 @@ const departmentResolver = {
           sort: { createdAt: 1 },
           populate: 'department_id',
         };
-
+        console.log(department_id, "department_id")
         const departmentQuery = department_id ? {department_id: {$in: department_id}} : {}
         const accountTypeQuery = account_type ? {account_type: account_type} : {}
         const query = {
@@ -49,6 +49,21 @@ const departmentResolver = {
 
       } catch (error) {
         console.log(error)
+      }
+    },
+    getChartOfAccountList: async(_root: undefined, {department_id, account_type}:{department_id: [String], account_type: [String]})=>{
+      try {
+        const departmentQuery = department_id.length > 0 ? {department_id: {$in: department_id}} : {} 
+        const accountTypeQuery = account_type.length > 0 ? {account_type: {$in: account_type}} : {}
+        const getChartOfAccountList = await ChartOfAccount.find({$and:[
+          {is_parents: false},
+          departmentQuery,
+          accountTypeQuery
+        ]}).populate('department_id sub_account parents_account')
+
+        return getChartOfAccountList
+      } catch (error) {
+        
       }
     },
     getBalanceByChartAccountId: async(_root: undefined, {chart_account_id, start_date, end_date}:{chart_account_id:string, start_date:string, end_date:string})=>{

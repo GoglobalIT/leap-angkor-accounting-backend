@@ -42,6 +42,7 @@ const chartOfAccountType = `#graphql
   type Query {
     getChartOfAccountById(chart_account_id: ID!): Department
     getChartOfAccountWithPagination(page: Int, limit: Int, keyword: String, pagination: Boolean, department_id: [String], account_type: String): ChartOfAccountPaginator
+    getChartOfAccountList(department_id: [String], account_type: [String]): [ChartOfAccount]
     getBalanceByChartAccountId(chart_account_id: ID, start_date: String, end_date: String): BalanceByChartAccount 
     getAccountType: [String]
   }
