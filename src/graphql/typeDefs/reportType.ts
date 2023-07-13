@@ -3,32 +3,18 @@
 const departmentType = `#graphql
     #Balance Sheet Type
     type BalanceSheetReport {
-        asset: Asset
+        asset: BalanceSheetDetail
         total_asset: Float
-        liability: Liability
-        equity: Equity
+        liability: BalanceSheetDetail
+        equity: BalanceSheetDetail
+        total_equity: Float
+        total_liability: Float
         total_liability_and_equity: Float
     }
-    type Asset {
-        cash: AccountDetail
-        accounts_receivable: AccountDetail
-        inventory_and_fixed_asset: AccountDetail
-        # fixed_assets: AccountDetail
-    }
-    type Liability {
-        accounts_payable: AccountDetail
-        total_liability_balance: Float
-    }
-    type Equity {
-        capitals: AccountDetail
-        cost: AccountDetail
-        expenditures: AccountDetail
-        revenues: AccountDetail
-        total_equity_balance: Float
-    }
-    type AccountDetail {
-        all_account: [AllAccount]
+    type BalanceSheetDetail {
+        account_name: String
         total_balance: Float
+        sub_account: [BalanceSheetDetail]
     }
     type AllAccount {
         _id: ID

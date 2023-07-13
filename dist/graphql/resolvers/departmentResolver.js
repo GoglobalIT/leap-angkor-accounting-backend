@@ -105,6 +105,14 @@ const departmentResolver = {
         },
         deleteDepartment: async (_root, { department_id }) => {
             try {
+                const departmentCannotDelete = ['64a52c65ad409eb75c87d8e1'];
+                const findWarning = departmentCannotDelete.find(e => e === department_id);
+                if (findWarning) {
+                    return {
+                        isSuccess: false,
+                        message: "Cannot delete, this is default department !"
+                    };
+                }
                 const isDeleted = await department_1.default.findByIdAndDelete(department_id);
                 if (!isDeleted) {
                     return {
