@@ -3,10 +3,10 @@
 const departmentType = `#graphql
     #Balance Sheet Type
     type BalanceSheetReport {
-        asset: BalanceSheetDetail
+        asset: [BalanceSheetDetail]
         total_asset: Float
-        liability: BalanceSheetDetail
-        equity: BalanceSheetDetail
+        liability: [BalanceSheetDetail]
+        equity: [BalanceSheetDetail]
         total_equity: Float
         total_liability: Float
         total_liability_and_equity: Float

@@ -10,39 +10,28 @@ const reportResolver = {
         },
         balanceSheetReport: async (_root: undefined, { fromDate, toDate }: { fromDate: string, toDate: string }) => {
             try {
-                const start_date = new Date(fromDate)
-                const end_date = new Date(toDate)
-                end_date.setHours(23, 59, 59, 999)
 
                 const getBalanceSheetAsset = await balanceSheet(['Cash', 'Account Receiveable', 'Inventory and Fixed Assets'], fromDate, toDate)
-                // console.log(getBalanceSheetAsset, "getBalanceSheetAsset")
-                // const balance_sheet_report = {
-                //     asset: {
-                //         cash: await balance_sheet.asset(start_date, end_date, "Cash"),
-                //         accounts_receivable: await balance_sheet.asset(start_date, end_date, "Account Receivable"),
-                //         inventory_and_fixed_asset: await balance_sheet.asset(start_date, end_date, "Inventory and Fixed Assets"),
-                //         // fixed_asset: await balance_sheet.asset(start_date, end_date, "Fixed Assets"),
+                const getBalanceSheetLiability = await balanceSheet(['Account Payable'], fromDate, toDate)
+                const getBalanceSheetEquity = await balanceSheet(['Revenues', 'Cost', 'Expenditures', 'Capitals'], fromDate, toDate)
 
-                //     },
-                //     total_asset: await balance_sheet.total_asset_balance(start_date, end_date),
-                //     liability: {
-                //         accounts_payable: await balance_sheet.liability(start_date, end_date, "Account Payable"),
-                //         total_liability_balance: await balance_sheet.total_liability_balance(start_date, end_date)
-
-                //     },
-                //     equity: {
-                //         capitals: await balance_sheet.equity(start_date, end_date, "Capitals"),
-                //         cost: await balance_sheet.equity(start_date, end_date, "Cost"),
-                //         expenditures: await balance_sheet.equity(start_date, end_date, "Expenditures"),
-                //         revenues: await balance_sheet.equity(start_date, end_date, "Revenues"),
-                //         total_equity_balance: await balance_sheet.total_equity_balance(start_date, end_date)
-
-                //     },
-                //     total_liability_and_equity: await balance_sheet.total_liability_and_equity_balance(start_date, end_date)
-                // }
+                const total_asset_balance = getBalanceSheetAsset.length > 0 ? getBalanceSheetAsset.map(e=>e.total_balance).reduce((a,b)=>a+b, 0) : 0
+                const total_liability_balance = getBalanceSheetLiability.length > 0 ? getBalanceSheetLiability.map(e=>e.total_balance).reduce((a,b)=>a+b, 0) : 0
+                const total_equity_balance = getBalanceSheetEquity.length > 0 ? getBalanceSheetEquity.map(e=>e.total_balance).reduce((a,b)=>a+b, 0) : 0
 
 
-                // return balance_sheet_report
+                const balanceSheetData = {
+                    asset: getBalanceSheetAsset,
+                    total_asset: total_asset_balance,
+                    liability: getBalanceSheetLiability,
+                    total_liability: total_liability_balance,
+                    equity: getBalanceSheetEquity,
+                    total_equity: total_equity_balance,
+                    total_liability_and_equity: total_liability_balance + total_equity_balance
+                }
+
+                return balanceSheetData
+
             } catch (error) {
 
             }

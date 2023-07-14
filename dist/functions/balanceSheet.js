@@ -43,6 +43,20 @@ const balanceSheet = async (accountType, start_date, end_date) => {
         const generateElement = generateBalanceTreeData(element, ChartAccountWithBalance);
         return generateElement;
     });
-    return generateBalanceSheet;
+    const finalBalance = generateBalanceSheet.map(element => {
+        const totalBalanceSubAccount = element.sub_account.map((e) => e.total_balance).reduce((a, b) => a + b, 0);
+        if (totalBalanceSubAccount < element.total_balance) {
+            const newElement = element;
+            newElement.sub_account.push({
+                account_name: "Other",
+                total_balance: element.total_balance - totalBalanceSubAccount,
+            });
+            return newElement;
+        }
+        else {
+            return element;
+        }
+    });
+    return finalBalance;
 };
 exports.default = balanceSheet;

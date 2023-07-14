@@ -29,7 +29,7 @@ const balanceSheet = async (accountType: Array<String>, start_date: String, end_
         })
     )
     const ChartAccountWithBalance = await findBalanceOfChartAccount
-  
+        
 
     // ***RECURSIVE Function */ find balance of a parents account from top parent to the last sub-account with tree data form
     const generateBalanceTreeData = (chartAccountInfo: any, chartAccountWithBalance: Array<any>) => {
@@ -52,9 +52,51 @@ const balanceSheet = async (accountType: Array<String>, start_date: String, end_
         const generateElement = generateBalanceTreeData(element, ChartAccountWithBalance)
         return generateElement
     })
-    
+
+    // //@Find other balance or own balance of parent account, if parents account has it own balance we need to add other account into sub-account
+    const finalBalance = generateBalanceSheet.map(element => {
+        const totalBalanceSubAccount = element.sub_account.map((e: any)=>e.total_balance).reduce((a: any, b:any)=> a + b, 0)
+        if(totalBalanceSubAccount < element.total_balance){
+            const newElement = element
+            newElement.sub_account.push({
+                account_name: "Other",
+                total_balance: element.total_balance - totalBalanceSubAccount,
+            })
+            return newElement
+        }else{
+            return element
+        }
+
+    })
+
+    return finalBalance
+    //findBalanceOtherRecursive
+    // const findOtherBalanceRecursive = (chartAccountTreeData: any) => {
+    //     // console.log(chartAccountTreeData, "chartAccountTreeData")
+    //     let chart_account_tree_data = chartAccountTreeData 
+    //         const totalBalanceSubAccount =  chart_account_tree_data.sub_account.map((e: any)=>e.total_balance).reduce((a: any, b:any)=> a + b, 0)
+    //         // console.log(totalBalanceSubAccount, "totalBalanceSubAccount")
+    //         if(totalBalanceSubAccount < chartAccountTreeData.total_balance){
+    //             chart_account_tree_data.sub_account.push({
+    //                 account_name: "Other",
+    //                 total_balance: chartAccountTreeData.total_balance - totalBalanceSubAccount,
+    //             })
+    //         }
+    //         if (chart_account_tree_data.sub_account.length > 0) {
+    //             chart_account_tree_data.sub_account.map(async(element: any) => {
+    //                 console.log(element, "element")
+    //                 findOtherBalanceRecursive(element)
+    //             })
+    //         }
+           
+    //     return chart_account_tree_data 
+    // }
+    // // console.log(generateBalanceSheet[0], "generateBalanceSheet")
+    // const test = findOtherBalanceRecursive(generateBalanceSheet[0])
+    // // console.log(test, "test")
    
-    return generateBalanceSheet
+   
+    // return generateBalanceSheet
 }
 
 export default balanceSheet
