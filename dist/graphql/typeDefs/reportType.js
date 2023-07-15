@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const departmentType = `#graphql
+const reportType = `#graphql
     #Balance Sheet Type
     type BalanceSheetReport {
         asset: [BalanceSheetDetail]
@@ -16,6 +16,25 @@ const departmentType = `#graphql
         total_balance: Float
         sub_account: [BalanceSheetDetail]
     }
+    type IncomeStatementReport {
+        revenues: [IncomeStatementDetail]
+        totalRevenue: IncomeTotalBalance
+        costOfSales: [IncomeStatementDetail]
+        totalCost: IncomeTotalBalance
+        expenses: [IncomeStatementDetail]
+        totalExpense: IncomeTotalBalance
+        grossProfit: IncomeTotalBalance
+        netIncome: IncomeTotalBalance
+    }
+    type IncomeTotalBalance{
+        selectedDateBalance: Float
+        yearToDateBalance: Float
+    }
+    type IncomeStatementDetail {
+        account_name: String
+        selectedDateBalance: Float
+        yearToDateBalance: Float 
+    }
     type AllAccount {
         _id: ID
         general_ledger_code: String
@@ -24,8 +43,8 @@ const departmentType = `#graphql
     }
     type Query {
         balanceSheetReport(fromDate: Date, toDate: Date): BalanceSheetReport
-        # incomeStatement(departmentId:)
+        incomeStatementReport(department_id: String, fromDate: Date, toDate: Date): IncomeStatementReport
     }
 
 `;
-exports.default = departmentType;
+exports.default = reportType;

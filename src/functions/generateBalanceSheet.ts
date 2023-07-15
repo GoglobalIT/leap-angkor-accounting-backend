@@ -1,6 +1,7 @@
 import ChartOfAccount from "../models/chartOfAccount";
 import GeneralJournal from "../models/generalJournal";
 
+//@Not use
 const balance_sheet = {
     asset: async (from_date: Date, to_date: Date, account_type: String)=>{
             const get_specific_account = await ChartOfAccount.find({account_type: account_type})

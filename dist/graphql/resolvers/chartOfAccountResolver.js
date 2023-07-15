@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const chartOfAccount_1 = __importDefault(require("../../models/chartOfAccount"));
 const paginationLabel_1 = require("../../functions/paginationLabel");
-const accountType_1 = __importDefault(require("../../functions/accountType"));
+const type_1 = require("../../functions/type");
 const getBalanceByChartAccount_1 = __importDefault(require("../../functions/getBalanceByChartAccount"));
 const departmentResolver = {
     Query: {
@@ -73,7 +73,7 @@ const departmentResolver = {
             }
         },
         getAccountType: async () => {
-            return accountType_1.default;
+            return type_1.accountType;
         }
     },
     Mutation: {

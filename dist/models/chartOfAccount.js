@@ -29,9 +29,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
 const mongoose_autopopulate_1 = __importDefault(require("mongoose-autopopulate"));
-const accountType_1 = __importDefault(require("../functions/accountType"));
+const type_1 = require("../functions/type");
 const chartOfAccountSchema = new mongoose_1.Schema({
-    account_type: { type: String, enum: accountType_1.default },
+    account_type: { type: String, enum: type_1.accountType },
     account_name: String,
     code_account: String,
     department_id: { type: mongoose_1.default.Types.ObjectId, ref: 'Department', autopopulate: true, default: null },

@@ -2,7 +2,7 @@ import mongoose, { Schema, model, InferSchemaType, Mongoose } from "mongoose";
 import paginate from "mongoose-paginate-v2";
 import {iChartOfAccount} from '../interface/iChartOfAccount'
 import mongooseAutoPopulate from "mongoose-autopopulate";
-import accountType from "../functions/accountType";
+import {accountType} from "../functions/type";
 
 
 const chartOfAccountSchema = new Schema<iChartOfAccount>({
