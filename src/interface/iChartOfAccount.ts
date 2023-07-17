@@ -10,5 +10,6 @@ export interface iChartOfAccount {
     is_top_parents: Boolean
     parents_account: Object
     sub_account: any
+    expense_type_id: any
     
 }

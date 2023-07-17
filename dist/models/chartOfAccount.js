@@ -53,6 +53,7 @@ const chartOfAccountSchema = new mongoose_1.Schema({
             default: []
         }
     ],
+    expense_type_id: { type: mongoose_1.default.Types.ObjectId, ref: 'ExpenseType', autopopulate: true, default: null },
 }, { timestamps: true });
 chartOfAccountSchema.plugin(mongoose_paginate_v2_1.default);
 chartOfAccountSchema.plugin(mongoose_autopopulate_1.default);

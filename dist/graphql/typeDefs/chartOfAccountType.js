@@ -14,6 +14,7 @@ const chartOfAccountType = `#graphql
     is_top_parents: Boolean
     parents_account: ChartOfAccount
     sub_account: [ChartOfAccount]
+    expense_type_id: ExpenseType
     createdAt: Date
     updatedAt: Date
   }
@@ -36,6 +37,7 @@ const chartOfAccountType = `#graphql
     account_description: String,
     parents_account: ID
     department_id: ID
+    expense_type_id: ID
   }
 
   type Query {
