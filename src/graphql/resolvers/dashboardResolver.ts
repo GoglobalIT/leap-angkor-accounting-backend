@@ -1,11 +1,9 @@
 
-import balanceSheet from '../../functions/balanceSheet'
-import incomeStatement from '../../functions/incomeStatement';
-import Department from '../../models/department';
+
 import GeneralJournal from '../../models/generalJournal';
 import ChartOfAccount from '../../models/chartOfAccount';
 import mongoose from 'mongoose';
-import moment from 'moment';
+import getBalanceChartAccount from '../../functions/getBalanceByChartAccount';
 
 
 const dashboardResolver = {
@@ -120,13 +118,30 @@ const dashboardResolver = {
 
       }
     },
-    getCash: async(_root: undefined, { })=>{
+    getCash: async(_root: undefined, {department_id, fromDate, toDate}:{department_id: String, fromDate: String, toDate: String})=>{
       try {
-        const getCash = await ChartOfAccount.find({$and:[
-          {account_type: 'Cash'},
-          {account_name: { $regex: "Hand", $options: "i" }}
-        ]})
-        console.log(getCash, "getCash")
+
+        // if(department_id === '64a52c65ad409eb75c87d8e1'){
+          const getCashOnHand = await ChartOfAccount.find({$and:[
+            {account_type: 'Cash'},
+            {account_name: { $regex: "Hand", $options: "i" }}
+          ]})
+          const getCashOnHandBalance = getCashOnHand.length > 0 ? await getBalanceChartAccount(getCashOnHand[0]._id.toString(), fromDate, toDate) : null
+          const cashOnHandBalance = getCashOnHandBalance ? getCashOnHandBalance.total_balance : 0
+       
+          const getCashInBank = await ChartOfAccount.find({$and:[
+            {account_type: 'Cash'},
+            {account_name: { $regex: "Bank", $options: "i" }}
+          ]})
+          const getCashInBankBalance = getCashInBank.length > 0 ? await getBalanceChartAccount(getCashInBank[0]._id.toString(), fromDate, toDate) : null
+          const cashInBankBalance = getCashInBankBalance ? getCashInBankBalance.total_balance : 0
+  
+          return {
+            cashOnHand: cashOnHandBalance,
+            cashInBank: cashInBankBalance
+          }
+        // }else
+        
       } catch (error) {
         
       }
