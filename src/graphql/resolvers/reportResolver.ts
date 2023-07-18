@@ -1,6 +1,6 @@
-// const balance_sheet = require('../../function/generateBalanceSheet')
-import balance_sheet from '../../functions/generateBalanceSheet'
+
 import balanceSheet from '../../functions/balanceSheet'
+import incomeStatement from '../../functions/incomeStatement';
 import Department from '../../models/department';
 import GeneralJournal from '../../models/generalJournal';
 import ChartOfAccount from '../../models/chartOfAccount';
@@ -15,8 +15,8 @@ const reportResolver = {
         },
         balanceSheetReport: async (_root: undefined, { fromDate, toDate }: { fromDate: string, toDate: string }) => {
             try {
-                console.log(fromDate, "from Date")
-                console.log(toDate, "toDate")
+                // console.log(fromDate, "from Date")
+                // console.log(toDate, "toDate")
                 const getBalanceSheetAsset = await balanceSheet(['Cash', 'Account Receiveable', 'Inventory and Fixed Assets'], fromDate, toDate)
                 const getBalanceSheetLiability = await balanceSheet(['Account Payable'], fromDate, toDate)
                 const getBalanceSheetEquity = await balanceSheet(['Revenues', 'Cost', 'Expenditures', 'Capitals'], fromDate, toDate)
@@ -259,13 +259,15 @@ const reportResolver = {
 
                 } else {
 
+
                     //@Find Revenue Cost and Expense by all department
                     let summmaryByDepartment = async (accountType: string, increase: string) => {
                         const findAccount = await ChartOfAccount.aggregate([
                             {$match: {account_type: accountType}},
                             {$match: {department_id: new mongoose.Types.ObjectId(department_id)}},
                             {$project: {
-                                account_name: 1
+                                account_name: 1,
+                                is_parents: 1
                             }},
                             {$sort: {createdAt: 1}}
                         ])
@@ -311,16 +313,85 @@ const reportResolver = {
 
                                 return {
                                     account_name: element.account_name,
+                                    is_parents: element.is_parents,
                                     selectedDateBalance: selectedDateBalance,
                                     yearToDateBalance: yearToDateBalance
                                 }
                             })
                         )
-                        // console.log(await findSummmary, "findSummmary")
-                        return findSummmary
+                        
+                        const getSummary = await findSummmary
+                        // console.log(getSummary, "getSummary")
+                        const findOtherSelectedDateBalance = getSummary.filter((e:any)=>e.is_parents === true).map((e:any)=>e.selectedDateBalance).reduce((a, b)=>a + b, 0)
+                        const findOtherYearToDateBalance = getSummary.filter((e:any)=>e.is_parents === true).map((e:any)=>e.yearToDateBalance).reduce((a, b)=>a + b, 0)
+
+                        const prepareData = []
+                        getSummary.map((e:any)=>{
+                            if(e.is_parents === false){
+                                prepareData.push({
+                                    account_name: e.account_name,
+                                    selectedDateBalance: e.selectedDateBalance,
+                                    yearToDateBalance: e.yearToDateBalance
+                                })
+                            }
+                        })
+                        //Push other 
+                        prepareData.push({
+                            account_name: "Other",
+                            selectedDateBalance: findOtherSelectedDateBalance,
+                            yearToDateBalance: findOtherYearToDateBalance
+                        })
+
+                        return prepareData
                     }
 
-                    console.log(await summmaryByDepartment("Revenues", "Credit"))
+                    const revenues = await summmaryByDepartment("Revenues", "Credit")
+                    const totalRevenueSelectedDate = revenues.map(e => e.selectedDateBalance).reduce((a, b) => a + b, 0)
+                    const totalRevenueYearToDate = revenues.map(e => e.yearToDateBalance).reduce((a, b) => a + b, 0)
+
+                    const costOfSales = await summmaryByDepartment("Cost", "Debit")
+                    const totalCostSelectedDate = costOfSales.map(e => e.selectedDateBalance).reduce((a, b) => a + b, 0)
+                    const totalCostYearToDate = costOfSales.map(e => e.yearToDateBalance).reduce((a, b) => a + b, 0)
+
+                    const expense = await summmaryByDepartment("Expenditures", "Debit")
+                    const totalExpenseSelectedDate = expense.map((e: any) => e.selectedDateBalance).reduce((a: any, b: any) => a + b, 0)
+                    const totalexpenseYearToDate = expense.map((e: any) => e.yearToDateBalance).reduce((a: any, b: any) => a + b, 0)
+
+                    const grossProfitSelectedDateBalance = totalRevenueSelectedDate - totalCostSelectedDate
+                    const grossProfitYearToDateBalance = totalRevenueYearToDate - totalCostYearToDate
+
+                    const netIncomeSelectedDateBalance = grossProfitSelectedDateBalance - totalExpenseSelectedDate
+                    const netIncomeYearToDateBalance = grossProfitYearToDateBalance - totalexpenseYearToDate
+
+                    return {
+                        revenues: revenues,
+                        totalRevenue: {
+                            selectedDateBalance: totalRevenueSelectedDate,
+                            yearToDateBalance: totalRevenueYearToDate
+                        },
+                        costOfSales: costOfSales,
+                        totalCost: {
+                            selectedDateBalance: totalCostSelectedDate,
+                            yearToDateBalance: totalCostYearToDate
+                        },
+                        expenses: expense,
+                        totalExpense: {
+                            selectedDateBalance: totalExpenseSelectedDate,
+                            yearToDateBalance: totalexpenseYearToDate
+                        },
+                        grossProfit: {
+                            selectedDateBalance: grossProfitSelectedDateBalance,
+                            yearToDateBalance: grossProfitYearToDateBalance
+                        },
+                        netIncome: {
+                            selectedDateBalance: netIncomeSelectedDateBalance,
+                            yearToDateBalance: netIncomeYearToDateBalance
+                        }
+                    }
+
+                    // const getIncomeStatmentRevenue = await incomeStatement(department_id, 'Revenues', fromDate, toDate)
+                    // console.log(getIncomeStatmentRevenue, "getIncomeStatmentRevenue")
+
                 }
                
             } catch (error) {

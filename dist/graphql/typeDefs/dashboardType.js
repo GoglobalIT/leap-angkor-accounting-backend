@@ -1,13 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const DashboardType = `#graphql
-    
+    type SummaryIncomeStatment {
+        revenue: Float
+        costOfSale: Float
+        Expense: Float
+        grossProfit: Float
+        netIncome: Float
+    }
+    type Cash {
+        cashOnHand: Float
+        cashInBank: Float
+    }
     type Query {
         getBarChart: String
-        getTotalRevenue(department_id: ID!, fromDate: String, toDate: String): Int
-        getTotalExpense(department_id: ID!, fromDate: String, toDate: String): Int
-        getTotalCost(department_id: ID!, fromDate: String, toDate: String): Int
-        # getSummaryBalanceSheet()
+        getSummaryIncomeStatment(department_id: String, fromDate: String, toDate: String): SummaryIncomeStatment
+        getCash(department_id: String, fromDate: String, toDate: String): Cash
     }
 `;
 exports.default = DashboardType;

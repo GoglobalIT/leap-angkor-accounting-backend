@@ -16,8 +16,6 @@ const reportResolver = {
         },
         balanceSheetReport: async (_root, { fromDate, toDate }) => {
             try {
-                console.log(fromDate, "from Date");
-                console.log(toDate, "toDate");
                 const getBalanceSheetAsset = await (0, balanceSheet_1.default)(['Cash', 'Account Receiveable', 'Inventory and Fixed Assets'], fromDate, toDate);
                 const getBalanceSheetLiability = await (0, balanceSheet_1.default)(['Account Payable'], fromDate, toDate);
                 const getBalanceSheetEquity = await (0, balanceSheet_1.default)(['Revenues', 'Cost', 'Expenditures', 'Capitals'], fromDate, toDate);
@@ -233,7 +231,8 @@ const reportResolver = {
                             { $match: { account_type: accountType } },
                             { $match: { department_id: new mongoose_1.default.Types.ObjectId(department_id) } },
                             { $project: {
-                                    account_name: 1
+                                    account_name: 1,
+                                    is_parents: 1
                                 } },
                             { $sort: { createdAt: 1 } }
                         ]);
@@ -274,13 +273,69 @@ const reportResolver = {
                             }
                             return {
                                 account_name: element.account_name,
+                                is_parents: element.is_parents,
                                 selectedDateBalance: selectedDateBalance,
                                 yearToDateBalance: yearToDateBalance
                             };
                         }));
-                        return findSummmary;
+                        const getSummary = await findSummmary;
+                        const findOtherSelectedDateBalance = getSummary.filter((e) => e.is_parents === true).map((e) => e.selectedDateBalance).reduce((a, b) => a + b, 0);
+                        const findOtherYearToDateBalance = getSummary.filter((e) => e.is_parents === true).map((e) => e.yearToDateBalance).reduce((a, b) => a + b, 0);
+                        const prepareData = [];
+                        getSummary.map((e) => {
+                            if (e.is_parents === false) {
+                                prepareData.push({
+                                    account_name: e.account_name,
+                                    selectedDateBalance: e.selectedDateBalance,
+                                    yearToDateBalance: e.yearToDateBalance
+                                });
+                            }
+                        });
+                        prepareData.push({
+                            account_name: "Other",
+                            selectedDateBalance: findOtherSelectedDateBalance,
+                            yearToDateBalance: findOtherYearToDateBalance
+                        });
+                        return prepareData;
                     };
-                    console.log(await summmaryByDepartment("Revenues", "Credit"));
+                    const revenues = await summmaryByDepartment("Revenues", "Credit");
+                    const totalRevenueSelectedDate = revenues.map(e => e.selectedDateBalance).reduce((a, b) => a + b, 0);
+                    const totalRevenueYearToDate = revenues.map(e => e.yearToDateBalance).reduce((a, b) => a + b, 0);
+                    const costOfSales = await summmaryByDepartment("Cost", "Debit");
+                    const totalCostSelectedDate = costOfSales.map(e => e.selectedDateBalance).reduce((a, b) => a + b, 0);
+                    const totalCostYearToDate = costOfSales.map(e => e.yearToDateBalance).reduce((a, b) => a + b, 0);
+                    const expense = await summmaryByDepartment("Expenditures", "Debit");
+                    const totalExpenseSelectedDate = expense.map((e) => e.selectedDateBalance).reduce((a, b) => a + b, 0);
+                    const totalexpenseYearToDate = expense.map((e) => e.yearToDateBalance).reduce((a, b) => a + b, 0);
+                    const grossProfitSelectedDateBalance = totalRevenueSelectedDate - totalCostSelectedDate;
+                    const grossProfitYearToDateBalance = totalRevenueYearToDate - totalCostYearToDate;
+                    const netIncomeSelectedDateBalance = grossProfitSelectedDateBalance - totalExpenseSelectedDate;
+                    const netIncomeYearToDateBalance = grossProfitYearToDateBalance - totalexpenseYearToDate;
+                    return {
+                        revenues: revenues,
+                        totalRevenue: {
+                            selectedDateBalance: totalRevenueSelectedDate,
+                            yearToDateBalance: totalRevenueYearToDate
+                        },
+                        costOfSales: costOfSales,
+                        totalCost: {
+                            selectedDateBalance: totalCostSelectedDate,
+                            yearToDateBalance: totalCostYearToDate
+                        },
+                        expenses: expense,
+                        totalExpense: {
+                            selectedDateBalance: totalExpenseSelectedDate,
+                            yearToDateBalance: totalexpenseYearToDate
+                        },
+                        grossProfit: {
+                            selectedDateBalance: grossProfitSelectedDateBalance,
+                            yearToDateBalance: grossProfitYearToDateBalance
+                        },
+                        netIncome: {
+                            selectedDateBalance: netIncomeSelectedDateBalance,
+                            yearToDateBalance: netIncomeYearToDateBalance
+                        }
+                    };
                 }
             }
             catch (error) {
