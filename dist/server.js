@@ -53,7 +53,7 @@ async function startServer(typeDefs, resolvers) {
     });
     await server.start();
     app.use('/graphql', (0, cors_1.default)(), body_parser_1.default.json(), (0, express4_1.expressMiddleware)(server, {
-        context: async ({ req }) => ({ token: req.headers.authorization }),
+        context: async ({ req }) => ({ req }),
     }));
     httpServer.listen(+process.env.PORT, () => {
         console.log(`🚀 Server is now running on http://localhost:${+process.env.PORT}/graphql`);

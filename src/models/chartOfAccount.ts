@@ -10,6 +10,8 @@ const chartOfAccountSchema = new Schema<iChartOfAccount>({
     account_name: String, 
     code_account: String,
     department_id: {type: mongoose.Types.ObjectId, ref: 'Department', autopopulate: true, default: null},
+    total_debit: {type: Number, default: 0},
+    total_credit: {type: Number, default: 0},
     total_balance: {type: Number, default: 0},
     account_description: String,
     is_parents: { type: Boolean, default: false },

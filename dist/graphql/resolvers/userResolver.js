@@ -20,9 +20,9 @@ const userResolver = {
                 console.log(error.message);
             }
         },
-        getUserLogin: async (_root, {}, req) => {
+        getUserLogin: async (_root, {}, { req }) => {
             try {
-                const currentUser = await (0, AuchCheck_1.default)(req.token);
+                const currentUser = await (0, AuchCheck_1.default)(req);
                 if (!currentUser.status) {
                     return new Error(currentUser.message);
                 }

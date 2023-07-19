@@ -1,9 +1,10 @@
 
 export const accountType = [
-    'Cash', // Asset (Debit)
-    'Account Receiveable', // Asset (Debit)
-    'Inventory and Fixed Assets', // Asset (Debit)
-    //'Fixed Assets', // Asset (Debit)
+    'Cash on hand', // Asset (Debit)
+    'Cash in bank', // Asset (Debit)
+    'Account Receivable', // Asset (Debit)
+    'Inventory', // Asset (Debit)
+    'Fixed Assets', // Asset (Debit)
     'Revenues',  // Revenues -> Equity (Credit)
     'Cost', //Exprense -> Equity (Credit)
     'Expenditures', // Exprense -> Equity (Debit)

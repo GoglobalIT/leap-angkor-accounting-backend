@@ -9,14 +9,12 @@ const generalJournal_1 = __importDefault(require("../../models/generalJournal"))
 const chartOfAccount_1 = __importDefault(require("../../models/chartOfAccount"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const moment_1 = __importDefault(require("moment"));
+const getBalanceByChartAccount_1 = __importDefault(require("../../functions/getBalanceByChartAccount"));
 const reportResolver = {
     Query: {
-        getBarChart: (_root, { _id }, req) => {
-            return "Dashboard query write in a separagte file for make easy find later";
-        },
         balanceSheetReport: async (_root, { fromDate, toDate }) => {
             try {
-                const getBalanceSheetAsset = await (0, balanceSheet_1.default)(['Cash', 'Account Receiveable', 'Inventory and Fixed Assets'], fromDate, toDate);
+                const getBalanceSheetAsset = await (0, balanceSheet_1.default)(['Cash on hand', 'Cash in bank', 'Account Receivable', 'Inventory', 'Fixed Assets'], fromDate, toDate);
                 const getBalanceSheetLiability = await (0, balanceSheet_1.default)(['Account Payable'], fromDate, toDate);
                 const getBalanceSheetEquity = await (0, balanceSheet_1.default)(['Revenues', 'Cost', 'Expenditures', 'Capitals'], fromDate, toDate);
                 const total_asset_balance = getBalanceSheetAsset.length > 0 ? getBalanceSheetAsset.map(e => e.total_balance).reduce((a, b) => a + b, 0) : 0;
@@ -230,13 +228,14 @@ const reportResolver = {
                         const findAccount = await chartOfAccount_1.default.aggregate([
                             { $match: { account_type: accountType } },
                             { $match: { department_id: new mongoose_1.default.Types.ObjectId(department_id) } },
-                            { $project: {
+                            {
+                                $project: {
                                     account_name: 1,
                                     is_parents: 1
-                                } },
+                                }
+                            },
                             { $sort: { createdAt: 1 } }
                         ]);
-                        console.log(findAccount, "findAccount");
                         const findSummmary = Promise.all(findAccount.map(async (element) => {
                             console.log(element, "element");
                             const findSelectedDateBalance = await generalJournal_1.default.aggregate([
@@ -337,6 +336,60 @@ const reportResolver = {
                         }
                     };
                 }
+            }
+            catch (error) {
+            }
+        },
+        generalLedgerReport: async (_root, { fromDate, toDate }) => {
+            try {
+                let selected_date = {};
+                if (fromDate && toDate) {
+                    const startDate = new Date(`${fromDate}T00:00:00.000Z`);
+                    const endDate = new Date(`${toDate}T16:59:59.999Z`);
+                    selected_date = { record_date: { $gte: startDate, $lte: endDate } };
+                }
+                const getParentsChartAccount = await chartOfAccount_1.default.find({
+                    $and: [
+                        { is_top_parents: true },
+                        { department_id: '64a52c65ad409eb75c87d8e1' },
+                    ]
+                });
+                const getAccountByType = await chartOfAccount_1.default.find({
+                    $and: [
+                        { department_id: '64a52c65ad409eb75c87d8e1' },
+                    ]
+                });
+                const findBalanceOfChartAccount = Promise.all(getAccountByType.map(async (element) => {
+                    const findBalance = await (0, getBalanceByChartAccount_1.default)(element._id.toString(), fromDate, toDate);
+                    return {
+                        _id: element._id,
+                        account_name: element.account_name,
+                        total_debit: findBalance.total_debit,
+                        total_credit: findBalance.total_credit,
+                        total_balance: findBalance.total_balance
+                    };
+                }));
+                const ChartAccountWithBalance = await findBalanceOfChartAccount;
+                const generateBalanceTreeData = (chartAccountInfo, chartAccountWithBalance) => {
+                    let chart_account_tree_data = { ...chartAccountInfo };
+                    console.log(chart_account_tree_data, "chart_account_tree_data");
+                    const findBalanceByAccountId = chartAccountWithBalance.find(e => e._id + "" === chartAccountInfo._id + "");
+                    if (findBalanceByAccountId) {
+                        chart_account_tree_data.total_balance = findBalanceByAccountId.total_balance;
+                        chart_account_tree_data.total_credit = findBalanceByAccountId.total_credit;
+                        chart_account_tree_data.total_debit = findBalanceByAccountId.total_debit;
+                    }
+                    if (chart_account_tree_data.sub_account.length > 0) {
+                        chart_account_tree_data.sub_account.map(async (element) => {
+                            generateBalanceTreeData(element, chartAccountWithBalance);
+                        });
+                    }
+                    return chart_account_tree_data;
+                };
+                const generateBalanceSheet = getParentsChartAccount.map(element => {
+                    const generateElement = generateBalanceTreeData(element, ChartAccountWithBalance);
+                    return generateElement;
+                });
             }
             catch (error) {
             }

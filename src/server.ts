@@ -77,7 +77,7 @@ async function startServer(typeDefs: any, resolvers:any) {
       cors<cors.CorsRequest>(), 
       bodyParser.json(), 
       expressMiddleware(server, {
-        context: async ({ req }) => ({ token: req.headers.authorization }),
+        context: async ({ req }) => ({ req }),
       }),
       );
 

@@ -18,9 +18,10 @@ const userResolver = {
         console.log(error.message)
       }
     },
-    getUserLogin: async(_root: undefined, {}, req:any) => {
+    getUserLogin: async(_root: undefined, {}, {req}:{req: any}) => {
         try {
-          const currentUser = await AuchCheck(req.token)
+          const currentUser = await AuchCheck(req)
+          
           if (!currentUser.status){
             return new Error(currentUser.message);
           }

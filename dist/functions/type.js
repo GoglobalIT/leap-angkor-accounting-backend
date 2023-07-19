@@ -2,9 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.accountType = void 0;
 exports.accountType = [
-    'Cash',
-    'Account Receiveable',
-    'Inventory and Fixed Assets',
+    'Cash on hand',
+    'Cash in bank',
+    'Account Receivable',
+    'Inventory',
+    'Fixed Assets',
     'Revenues',
     'Cost',
     'Expenditures',

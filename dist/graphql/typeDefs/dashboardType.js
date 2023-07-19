@@ -12,10 +12,23 @@ const DashboardType = `#graphql
         cashOnHand: Float
         cashInBank: Float
     }
+    # Account Recievable and Account Payable
+    type ARandAP{
+        month: String
+        balanceAR: Float
+        balanceAP: Float
+    }
+    type RevenueCostExpense {
+        account_name: String
+        balance: Float
+    }
     type Query {
-        getBarChart: String
         getSummaryIncomeStatment(department_id: String, fromDate: String, toDate: String): SummaryIncomeStatment
         getCash(department_id: String, fromDate: String, toDate: String): Cash
+        getARandAP(fromDate: String, toDate: String): [ARandAP]
+        getExpenseByDepartment(department_id: String, fromDate: String, toDate: String): [RevenueCostExpense]
+        getRevenueByDepartment(department_id: String, fromDate: String, toDate: String): [RevenueCostExpense]
+        getCostOfSaleByDepartment(department_id: String, fromDate: String, toDate: String): [RevenueCostExpense]
     }
 `;
 exports.default = DashboardType;

@@ -6,18 +6,17 @@ import GeneralJournal from '../../models/generalJournal';
 import ChartOfAccount from '../../models/chartOfAccount';
 import mongoose from 'mongoose';
 import moment from 'moment';
+import getBalanceChartAccount from '../../functions/getBalanceByChartAccount';
+import {iChartOfAccount} from '../../interface/iChartOfAccount'
 
 
 const reportResolver = {
     Query: {
-        getBarChart: (_root: undefined, { _id }: { _id: String }, req: any) => {
-            return "Dashboard query write in a separagte file for make easy find later"
-        },
         balanceSheetReport: async (_root: undefined, { fromDate, toDate }: { fromDate: string, toDate: string }) => {
             try {
                 // console.log(fromDate, "from Date")
                 // console.log(toDate, "toDate")
-                const getBalanceSheetAsset = await balanceSheet(['Cash', 'Account Receiveable', 'Inventory and Fixed Assets'], fromDate, toDate)
+                const getBalanceSheetAsset = await balanceSheet(['Cash on hand', 'Cash in bank', 'Account Receivable', 'Inventory', 'Fixed Assets'], fromDate, toDate)
                 const getBalanceSheetLiability = await balanceSheet(['Account Payable'], fromDate, toDate)
                 const getBalanceSheetEquity = await balanceSheet(['Revenues', 'Cost', 'Expenditures', 'Capitals'], fromDate, toDate)
 
@@ -131,7 +130,7 @@ const reportResolver = {
                             }
                         },
                         { $unwind: "$expense_type" },
-                        { $sort: {"expense_type.createdAt": 1}},
+                        { $sort: { "expense_type.createdAt": 1 } },
                         {
                             $project: {
                                 expense_name: "$expense_type.expense_name"
@@ -263,23 +262,25 @@ const reportResolver = {
                     //@Find Revenue Cost and Expense by all department
                     let summmaryByDepartment = async (accountType: string, increase: string) => {
                         const findAccount = await ChartOfAccount.aggregate([
-                            {$match: {account_type: accountType}},
-                            {$match: {department_id: new mongoose.Types.ObjectId(department_id)}},
-                            {$project: {
-                                account_name: 1,
-                                is_parents: 1
-                            }},
-                            {$sort: {createdAt: 1}}
+                            { $match: { account_type: accountType } },
+                            { $match: { department_id: new mongoose.Types.ObjectId(department_id) } },
+                            {
+                                $project: {
+                                    account_name: 1,
+                                    is_parents: 1
+                                }
+                            },
+                            { $sort: { createdAt: 1 } }
                         ])
-                        console.log(findAccount, "findAccount")
-                       
+                        // console.log(findAccount, "findAccount")
+
                         const findSummmary = Promise.all(
                             findAccount.map(async element => {
                                 console.log(element, "element")
                                 const findSelectedDateBalance = await GeneralJournal.aggregate([
                                     { $unwind: "$journal_entries" },
                                     { $match: selected_date },
-                                    { $match: { "journal_entries.chart_account_id":  element._id  } },
+                                    { $match: { "journal_entries.chart_account_id": element._id } },
                                     {
                                         $group: {
                                             _id: null,
@@ -288,7 +289,7 @@ const reportResolver = {
                                         }
                                     },
                                 ])
-                       
+
                                 let selectedDateBalance = findSelectedDateBalance.length > 0 ? findSelectedDateBalance[0].total_credit - findSelectedDateBalance[0].total_debit : 0
                                 if (increase === "Debit") {
                                     selectedDateBalance = findSelectedDateBalance.length > 0 ? findSelectedDateBalance[0].total_debit - findSelectedDateBalance[0].total_credit : 0
@@ -297,7 +298,7 @@ const reportResolver = {
                                 const findYearToDateBalance = await GeneralJournal.aggregate([
                                     { $unwind: "$journal_entries" },
                                     { $match: year_to_date },
-                                    { $match: { "journal_entries.chart_account_id":  element._id  } },
+                                    { $match: { "journal_entries.chart_account_id": element._id } },
                                     {
                                         $group: {
                                             _id: null,
@@ -319,15 +320,15 @@ const reportResolver = {
                                 }
                             })
                         )
-                        
+
                         const getSummary = await findSummmary
                         // console.log(getSummary, "getSummary")
-                        const findOtherSelectedDateBalance = getSummary.filter((e:any)=>e.is_parents === true).map((e:any)=>e.selectedDateBalance).reduce((a, b)=>a + b, 0)
-                        const findOtherYearToDateBalance = getSummary.filter((e:any)=>e.is_parents === true).map((e:any)=>e.yearToDateBalance).reduce((a, b)=>a + b, 0)
+                        const findOtherSelectedDateBalance = getSummary.filter((e: any) => e.is_parents === true).map((e: any) => e.selectedDateBalance).reduce((a, b) => a + b, 0)
+                        const findOtherYearToDateBalance = getSummary.filter((e: any) => e.is_parents === true).map((e: any) => e.yearToDateBalance).reduce((a, b) => a + b, 0)
 
                         const prepareData = []
-                        getSummary.map((e:any)=>{
-                            if(e.is_parents === false){
+                        getSummary.map((e: any) => {
+                            if (e.is_parents === false) {
                                 prepareData.push({
                                     account_name: e.account_name,
                                     selectedDateBalance: e.selectedDateBalance,
@@ -393,7 +394,95 @@ const reportResolver = {
                     // console.log(getIncomeStatmentRevenue, "getIncomeStatmentRevenue")
 
                 }
-               
+
+            } catch (error) {
+
+            }
+        },
+        generalLedgerReport: async (_root: undefined, { fromDate, toDate }: { fromDate: string, toDate: string }) => {
+            try {
+                let selected_date = {}
+                if (fromDate && toDate) {
+                    const startDate = new Date(`${fromDate}T00:00:00.000Z`)
+                    const endDate = new Date(`${toDate}T16:59:59.999Z`)
+                    selected_date = { record_date: { $gte: startDate, $lte: endDate } }
+                }
+
+                //@Parent Account, we need it becasue it already have tree data form
+                const getParentsChartAccount = await ChartOfAccount.find({
+                    $and: [
+                        { is_top_parents: true },
+                        { department_id: '64a52c65ad409eb75c87d8e1' },
+                        // { account_type: { $in: accountType } },
+                    ]
+                })
+                //@All Account by many chart account type, we need to find balance for each account for use it in RECURSIVE Function
+                const getAccountByType = await ChartOfAccount.find({
+                    $and: [
+                        { department_id: '64a52c65ad409eb75c87d8e1' },
+                        // { account_type: { $in: accountType } },
+                    ]
+                })
+                //@Find Balance of each account with getBalanceChartAccount() function
+                const findBalanceOfChartAccount: any = Promise.all(
+                    getAccountByType.map(async element => {
+                        const findBalance = await getBalanceChartAccount(element._id.toString(), fromDate, toDate)
+                     
+                        return {
+                            _id: element._id,
+                            account_name: element.account_name,
+                            total_debit: findBalance.total_debit,
+                            total_credit: findBalance.total_credit,
+                            total_balance: findBalance.total_balance
+                        }
+                    })
+                )
+                const ChartAccountWithBalance = await findBalanceOfChartAccount
+                // console.log(ChartAccountWithBalance, "ChartAccountWithBalance")
+
+                // ***RECURSIVE Function */ find balance of a parents account from top parent to the last sub-account with tree data form
+                const generateBalanceTreeData = (chartAccountInfo: any, chartAccountWithBalance: Array<any>) => {
+                    let chart_account_tree_data = {...chartAccountInfo}
+                    console.log(chart_account_tree_data, "chart_account_tree_data")
+                    const findBalanceByAccountId = chartAccountWithBalance.find(e => e._id + "" === chartAccountInfo._id + "")
+                    if (findBalanceByAccountId) {
+                        chart_account_tree_data.total_balance = findBalanceByAccountId.total_balance
+                        chart_account_tree_data.total_credit = findBalanceByAccountId.total_credit
+                        chart_account_tree_data.total_debit = findBalanceByAccountId.total_debit
+                    }
+                    if (chart_account_tree_data.sub_account.length > 0) {
+                        chart_account_tree_data.sub_account.map(async (element: any) => {
+                            generateBalanceTreeData(element, chartAccountWithBalance)
+                        })
+                    }
+
+                    return chart_account_tree_data
+                }
+
+                //@Find balance of all parents account by use generateBalanceTreeData()
+                const generateBalanceSheet = getParentsChartAccount.map(element => {
+                    const generateElement = generateBalanceTreeData(element, ChartAccountWithBalance)
+                    // console.log(generateElement, "generateElement")
+                    return generateElement
+                })
+
+                // //@Find other balance or own balance of parent account, if parents account has it own balance we need to add other account into sub-account
+                // const finalBalance = generateBalanceSheet.map(element => {
+                //     const totalBalanceSubAccount = element.sub_account.map((e: any) => e.total_balance).reduce((a: any, b: any) => a + b, 0)
+                //     if (totalBalanceSubAccount < element.total_balance) {
+                //         const newElement = element
+                //         newElement.sub_account.push({
+                //             account_name: "Other",
+                //             total_balance: element.total_balance - totalBalanceSubAccount,
+                //         })
+                //         return newElement
+                //     } else {
+                //         return element
+                //     }
+
+                // })
+
+                // return finalBalance
             } catch (error) {
 
             }

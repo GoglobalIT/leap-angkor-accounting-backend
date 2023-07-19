@@ -43,7 +43,8 @@ const getBalanceChartAccount = async (chart_account_id, start_date, end_date) =>
                     total_credit: { $sum: "$journal_entries.credit" },
                 } }
         ]);
-        if (chartAccountInfo.account_type === "Cash" ||
+        if (chartAccountInfo.account_type === "Cash on hand" ||
+            chartAccountInfo.account_type === "Cash in bank" ||
             chartAccountInfo.account_type === "Account Receivable" ||
             chartAccountInfo.account_type === "Inventory and Fixed assets" ||
             chartAccountInfo.account_type === "Expenditures") {
