@@ -13,5 +13,5 @@ export interface iChartOfAccount {
     parents_account: Object
     sub_account: any
     expense_type_id: any
-    
+    journal_entries: any
 }

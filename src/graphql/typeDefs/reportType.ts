@@ -47,20 +47,18 @@ const reportType = `#graphql
         account_type: String
         sub_account: [Details]
         journal_entries: [JournalEntriesGeneralLedger]
-        total_balance: TotalBalance
+        total_credit: Float
+        total_debit: Float
+        total_balance: Float
     }
     type JournalEntriesGeneralLedger{
-        journal_number: String
+        journal_number: Int
+        record_date: Date
         transaction_title: String
-        account_description: String
+        description: String
         memo: String
         debit: Float
         credit: Float
-    }
-    type TotalBalance{
-        total_debit: Float
-        total_credit: Float
-        total_balance: Float
     }
     type Total{
         debit: Float

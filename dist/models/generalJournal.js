@@ -30,7 +30,7 @@ const mongoose_1 = __importStar(require("mongoose"));
 const mongoose_paginate_v2_1 = __importDefault(require("mongoose-paginate-v2"));
 const mongoose_autopopulate_1 = __importDefault(require("mongoose-autopopulate"));
 const generalJournalSchema = new mongoose_1.Schema({
-    transaction_title: { type: String },
+    transaction_title: { type: String, default: "" },
     currency: { type: String, enum: ['USD', 'KHR'], default: 'USD' },
     record_date: { type: Date, default: null },
     journal_number: { type: Number },
@@ -44,7 +44,7 @@ const generalJournalSchema = new mongoose_1.Schema({
         }
     ],
     created_by: { type: mongoose_1.default.Types.ObjectId, ref: "User", autopopulate: true },
-    note: { type: String, default: "" },
+    memo: { type: String, default: "" },
 }, { timestamps: true });
 generalJournalSchema.plugin(mongoose_paginate_v2_1.default);
 generalJournalSchema.plugin(mongoose_autopopulate_1.default);

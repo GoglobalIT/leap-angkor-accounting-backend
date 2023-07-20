@@ -14,5 +14,5 @@ export interface iGeneralJournal {
         }
     ],
     created_by: String
-    note: String
+    memo: String
 }

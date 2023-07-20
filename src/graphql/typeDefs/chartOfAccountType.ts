@@ -9,6 +9,8 @@ const chartOfAccountType = `#graphql
     account_name: String
     code_account: String
     department_id: Department
+    total_credit: Float
+    total_debit: Float
     total_balance: Float
     account_description: String
     is_parents: Boolean
@@ -16,6 +18,7 @@ const chartOfAccountType = `#graphql
     parents_account: ChartOfAccount
     sub_account: [ChartOfAccount]
     expense_type_id: ExpenseType
+    journal_entries: JournalEntries
     createdAt: Date
     updatedAt: Date
   }
@@ -31,6 +34,7 @@ const chartOfAccountType = `#graphql
     total_credit: Float,
     total_balance: Float,
   }
+
   input ChartOfAccountInput {
     code_account: String
     account_type: String,

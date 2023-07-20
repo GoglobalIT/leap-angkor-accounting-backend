@@ -32,6 +32,8 @@ const chartOfAccountSchema = new Schema<iChartOfAccount>({
     ],
     //Only for expense account, we need this for Income Statment Summary Report show not mess
     expense_type_id: {type: mongoose.Types.ObjectId, ref: 'ExpenseType', autopopulate: true, default: null},
+    //We need this for easy generate General Ledger Report 
+    journal_entries: [{type: Object, default: null}],
 
 }, {timestamps: true})
 chartOfAccountSchema.plugin(paginate)

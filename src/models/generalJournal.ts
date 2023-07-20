@@ -6,7 +6,7 @@ import {accountType} from "../functions/type";
 
 
 const generalJournalSchema = new Schema<any>({
-    transaction_title: {type: String},
+    transaction_title: {type: String, default: ""},
     currency: {type: String, enum:['USD', 'KHR'], default: 'USD'},
     record_date: {type: Date, default: null},
     journal_number: {type: Number},
@@ -20,7 +20,7 @@ const generalJournalSchema = new Schema<any>({
         }
     ],
     created_by: {type: mongoose.Types.ObjectId, ref: "User", autopopulate: true},
-    note: {type: String, default: ""},
+    memo: {type: String, default: ""},
 }, {timestamps: true})
 generalJournalSchema.plugin(paginate)
 generalJournalSchema.plugin(mongooseAutoPopulate)

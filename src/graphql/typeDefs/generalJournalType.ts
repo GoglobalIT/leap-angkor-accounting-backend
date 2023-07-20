@@ -33,7 +33,7 @@ const generalJournalType = `#graphql
     journal_number: Int
     journal_entries: [JournalEntriesInput]
     created_by: String
-    note: String
+    memo: String
   }
   input JournalEntriesInput{
     chart_account_id: String,

@@ -440,19 +440,52 @@ const reportResolver = {
                 const ChartAccountWithBalance = await findBalanceOfChartAccount
                 // console.log(ChartAccountWithBalance, "ChartAccountWithBalance")
 
+                //*** All Journal Entries for General Ledger*/
+                const allJournalEntries = await GeneralJournal.aggregate([
+                    {$match: selected_date},
+                    {$unwind: "$journal_entries"},
+                    {$lookup: {
+                        from: "chartofaccounts",
+                        localField: "journal_entries.chart_account_id",
+                        foreignField: "_id",
+                        as: "chart_of_account_data"
+                    }},
+                    {$unwind: "$chart_of_account_data"},
+                    {$project: {
+                        // transaction_id: "$_id",
+                        transaction_title: 1,
+                        journal_number: 1,
+                        record_date: 1,
+                        chart_account_id: "$journal_entries.chart_account_id",
+                        // account_name: "$chart_of_account_data.account_name",
+                        // account_type: "$chart_of_account_data.account_type",
+                        // general_ledger_code: "$chart_of_account_data.general_ledger_code",
+                        description: "$journal_entries.description",
+                        memo: 1,
+                        credit: "$journal_entries.credit",
+                        debit: "$journal_entries.debit",
+
+                    }}
+                ]);
+
+                // console.log(allJournalEntries, "allJournalEntries")
+          
                 // ***RECURSIVE Function */ find balance of a parents account from top parent to the last sub-account with tree data form
-                const generateBalanceTreeData = (chartAccountInfo: any, chartAccountWithBalance: Array<any>) => {
-                    let chart_account_tree_data = {...chartAccountInfo}
-                    console.log(chart_account_tree_data, "chart_account_tree_data")
+                const generateBalanceTreeData = (chartAccountInfo: any, chartAccountWithBalance: Array<any>, allJournalEntries: Array<any>) => {
+                    let chart_account_tree_data: iChartOfAccount = chartAccountInfo
                     const findBalanceByAccountId = chartAccountWithBalance.find(e => e._id + "" === chartAccountInfo._id + "")
+                    const find_journal_entries = allJournalEntries.filter((e)=> e.chart_account_id+'' === chartAccountInfo._id+'')
                     if (findBalanceByAccountId) {
                         chart_account_tree_data.total_balance = findBalanceByAccountId.total_balance
                         chart_account_tree_data.total_credit = findBalanceByAccountId.total_credit
                         chart_account_tree_data.total_debit = findBalanceByAccountId.total_debit
                     }
+                    if(find_journal_entries){
+                        chart_account_tree_data.journal_entries = find_journal_entries
+                    }
                     if (chart_account_tree_data.sub_account.length > 0) {
                         chart_account_tree_data.sub_account.map(async (element: any) => {
-                            generateBalanceTreeData(element, chartAccountWithBalance)
+                            generateBalanceTreeData(element, chartAccountWithBalance, allJournalEntries)
                         })
                     }
 
@@ -461,28 +494,55 @@ const reportResolver = {
 
                 //@Find balance of all parents account by use generateBalanceTreeData()
                 const generateBalanceSheet = getParentsChartAccount.map(element => {
-                    const generateElement = generateBalanceTreeData(element, ChartAccountWithBalance)
+                    const generateElement = generateBalanceTreeData(element, ChartAccountWithBalance, allJournalEntries)
                     // console.log(generateElement, "generateElement")
                     return generateElement
                 })
+                // console.log(generateBalanceSheet, "generateBalanceSheet")
+                // console.log(generateBalanceSheet, "generateBalanceSheet")
+                //@Find other balance or own balance of parent account, if parents account has it own balance we need to add other account into sub-account
+                const finalBalance = generateBalanceSheet.map(element => {
+                    console.log(element, "element")
+                    const totalBalanceSubAccount = element.sub_account.map((e: any) => e.total_balance).reduce((a: any, b: any) => a + b, 0)
+        
+                    if (totalBalanceSubAccount < element.total_balance) {
+                        const newElement = element
+                        const newTotalBalance = Number(element.total_balance) - Number(totalBalanceSubAccount)
+                        newElement.sub_account.push({
+                            account_name: "Other",
+                            total_balance: newTotalBalance,
+                            journal_entries: element.journal_entries
+                        })
+                        return newElement
+                    } else {
+                        return element
+                    }
 
-                // //@Find other balance or own balance of parent account, if parents account has it own balance we need to add other account into sub-account
-                // const finalBalance = generateBalanceSheet.map(element => {
-                //     const totalBalanceSubAccount = element.sub_account.map((e: any) => e.total_balance).reduce((a: any, b: any) => a + b, 0)
-                //     if (totalBalanceSubAccount < element.total_balance) {
-                //         const newElement = element
-                //         newElement.sub_account.push({
-                //             account_name: "Other",
-                //             total_balance: element.total_balance - totalBalanceSubAccount,
-                //         })
-                //         return newElement
-                //     } else {
-                //         return element
-                //     }
+                })
+                // console.log(finalBalance, "finalBalance")
 
-                // })
+                //**Find total debit and credit of General Ledger*/
+                const totalBalanceGeneralLedger = await GeneralJournal.aggregate([
+                    {$match: selected_date},
+                    {$unwind: "$journal_entries"},
+                    {$group: {
+                        _id: null,
+                        total_credit: {$sum: "$journal_entries.credit"},
+                        total_debit: {$sum: "$journal_entries.debit"}
+                    }}
+                ]);
 
-                // return finalBalance
+                //*** Prepare data for return */
+                let finalGeneralLedger = {
+                    details: finalBalance,
+                    total: {
+                        debit: totalBalanceGeneralLedger[0].total_debit,
+                        credit: totalBalanceGeneralLedger[0].total_credit
+                    }
+                }   
+        
+
+                return finalGeneralLedger
             } catch (error) {
 
             }
