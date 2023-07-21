@@ -28,7 +28,6 @@ const departmentResolver = {
                     sort: { createdAt: 1 },
                     populate: 'department_id',
                 };
-                console.log(department_id, "department_id");
                 const departmentQuery = department_id ? { department_id: { $in: department_id } } : {};
                 const accountTypeQuery = account_type ? { account_type: account_type } : {};
                 const query = {
