@@ -11,15 +11,14 @@ const moment_1 = __importDefault(require("moment"));
 const getBalanceByChartAccount_1 = __importDefault(require("../../functions/getBalanceByChartAccount"));
 const reportResolver = {
     Query: {
-        balanceSheetReport: async (_root, { fromDate, toDate }) => {
+        balanceSheetReport: async (_root, { year, month }) => {
             try {
-                let last_month_start_date = "";
-                let last_month_end_date = "";
-                if (fromDate && toDate) {
-                    last_month_end_date = (0, moment_1.default)(fromDate).subtract(1, 'days').format("YYYY-MM-DD");
-                    last_month_start_date = (0, moment_1.default)(last_month_end_date).format("YYYY-MM-01");
-                }
+                const lastDayCurrMonth = new Date(Number(year), Number(month), 0).getDate();
+                const curr_month_from_date = `${year}-${month}-01`;
+                const curr_month_to_date = `${year}-${month}-${lastDayCurrMonth}`;
                 const balanceSheet = async (accountType, start_date, end_date) => {
+                    const last_month_to_date = (0, moment_1.default)(start_date).subtract(1, 'days').format("YYYY-MM-DD");
+                    const last_month_from_date = (0, moment_1.default)(last_month_to_date).format("YYYY-MM-01");
                     const getParentsChartAccount = await chartOfAccount_1.default.find({
                         $and: [
                             { is_top_parents: true },
@@ -35,7 +34,7 @@ const reportResolver = {
                     });
                     const findBalanceOfChartAccount = Promise.all(getAccountByType.map(async (element) => {
                         const currentMonthBalance = await (0, getBalanceByChartAccount_1.default)(element._id.toString(), start_date, end_date);
-                        const lastMonthBalance = await (0, getBalanceByChartAccount_1.default)(element._id.toString(), last_month_start_date, last_month_end_date);
+                        const lastMonthBalance = await (0, getBalanceByChartAccount_1.default)(element._id.toString(), last_month_from_date, last_month_to_date);
                         return {
                             _id: element._id,
                             account_name: element.account_name,
@@ -84,9 +83,9 @@ const reportResolver = {
                     });
                     return finalBalance;
                 };
-                const getBalanceSheetAsset = await balanceSheet(['Cash on hand', 'Cash in bank', 'Account Receivable', 'Inventory', 'Fixed Assets'], fromDate, toDate);
-                const getBalanceSheetLiability = await balanceSheet(['Account Payable'], fromDate, toDate);
-                const getBalanceSheetEquity = await balanceSheet(['Revenues', 'Cost', 'Expenditures', 'Capitals'], fromDate, toDate);
+                const getBalanceSheetAsset = await balanceSheet(['Cash on hand', 'Cash in bank', 'Account Receivable', 'Inventory', 'Fixed Assets'], curr_month_from_date, curr_month_to_date);
+                const getBalanceSheetLiability = await balanceSheet(['Account Payable'], curr_month_from_date, curr_month_to_date);
+                const getBalanceSheetEquity = await balanceSheet(['Revenues', 'Cost', 'Expenditures', 'Capitals'], curr_month_from_date, curr_month_to_date);
                 let balanceSheetData = {
                     asset: getBalanceSheetAsset,
                     total_asset: {

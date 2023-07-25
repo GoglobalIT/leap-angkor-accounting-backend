@@ -69,7 +69,7 @@ const reportType = `#graphql
     }
 
     type Query {
-        balanceSheetReport(fromDate: Date, toDate: Date): BalanceSheetReport
+        balanceSheetReport(year: Date, month: Date): BalanceSheetReport
         incomeStatementReport(department_id: String, fromDate: Date, toDate: Date, form: String): IncomeStatementReport
         generalLedgerReport(fromDate: Date, toDate: Date): GeneralLedgerReport
     }
