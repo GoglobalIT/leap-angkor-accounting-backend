@@ -4,17 +4,21 @@ const reportType = `#graphql
     #Balance Sheet Type
     type BalanceSheetReport {
         asset: [BalanceSheetDetail]
-        total_asset: Float
+        total_asset: BalanceSheetBalance
         liability: [BalanceSheetDetail]
         equity: [BalanceSheetDetail]
-        total_equity: Float
-        total_liability: Float
-        total_liability_and_equity: Float
+        total_equity: BalanceSheetBalance
+        total_liability: BalanceSheetBalance
+        total_liability_and_equity: BalanceSheetBalance
     }
     type BalanceSheetDetail {
         account_name: String
-        total_balance: Float
+        total_balance: BalanceSheetBalance
         sub_account: [BalanceSheetDetail]
+    }
+    type BalanceSheetBalance {
+        current_month_balance: Float
+        last_month_balance: Float
     }
     #Income Statment Report Type
     type IncomeStatementReport {
@@ -39,7 +43,7 @@ const reportType = `#graphql
     # General Ledger Type
     type GeneralLedgerReport{
         details: [Details]
-        total: Total
+        total: TotalBalance
     }
     type Details{
         _id: ID
@@ -47,9 +51,7 @@ const reportType = `#graphql
         account_type: String
         sub_account: [Details]
         journal_entries: [JournalEntriesGeneralLedger]
-        total_credit: Float
-        total_debit: Float
-        total_balance: Float
+        total_balance: TotalBalance
     }
     type JournalEntriesGeneralLedger{
         journal_number: Int
@@ -60,10 +62,12 @@ const reportType = `#graphql
         debit: Float
         credit: Float
     }
-    type Total{
+    type TotalBalance{
         debit: Float
         credit: Float
+        balance: Float
     }
+
     type Query {
         balanceSheetReport(fromDate: Date, toDate: Date): BalanceSheetReport
         incomeStatementReport(department_id: String, fromDate: Date, toDate: Date, form: String): IncomeStatementReport

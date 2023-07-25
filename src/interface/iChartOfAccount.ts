@@ -4,9 +4,7 @@ export interface iChartOfAccount {
     account_name: String, 
     code_account: String
     department_id: String
-    total_credit: Number
-    total_debit: Number
-    total_balance: Number
+    total_balance: Object
     account_description: String,
     is_parents: Boolean
     is_top_parents: Boolean

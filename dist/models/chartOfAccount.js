@@ -35,9 +35,6 @@ const chartOfAccountSchema = new mongoose_1.Schema({
     account_name: String,
     code_account: String,
     department_id: { type: mongoose_1.default.Types.ObjectId, ref: 'Department', autopopulate: true, default: null },
-    total_debit: { type: Number, default: 0 },
-    total_credit: { type: Number, default: 0 },
-    total_balance: { type: Number, default: 0 },
     account_description: String,
     is_parents: { type: Boolean, default: false },
     is_top_parents: { type: Boolean, default: true },
@@ -56,6 +53,7 @@ const chartOfAccountSchema = new mongoose_1.Schema({
         }
     ],
     expense_type_id: { type: mongoose_1.default.Types.ObjectId, ref: 'ExpenseType', autopopulate: true, default: null },
+    total_balance: { type: Object, default: null },
     journal_entries: [{ type: Object, default: null }],
 }, { timestamps: true });
 chartOfAccountSchema.plugin(mongoose_paginate_v2_1.default);

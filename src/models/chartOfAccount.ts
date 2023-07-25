@@ -10,9 +10,8 @@ const chartOfAccountSchema = new Schema<iChartOfAccount>({
     account_name: String, 
     code_account: String,
     department_id: {type: mongoose.Types.ObjectId, ref: 'Department', autopopulate: true, default: null},
-    total_debit: {type: Number, default: 0},
-    total_credit: {type: Number, default: 0},
-    total_balance: {type: Number, default: 0},
+    // total_debit: {type: Number, default: 0},
+    // total_credit: {type: Number, default: 0},
     account_description: String,
     is_parents: { type: Boolean, default: false },
     is_top_parents: { type: Boolean, default: true },
@@ -33,6 +32,7 @@ const chartOfAccountSchema = new Schema<iChartOfAccount>({
     //Only for expense account, we need this for Income Statment Summary Report show not mess
     expense_type_id: {type: mongoose.Types.ObjectId, ref: 'ExpenseType', autopopulate: true, default: null},
     //We need this for easy generate General Ledger Report 
+    total_balance: {type: Object, default: null},
     journal_entries: [{type: Object, default: null}],
 
 }, {timestamps: true})

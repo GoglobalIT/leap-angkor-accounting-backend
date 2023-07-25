@@ -78,14 +78,12 @@ const departmentResolver = {
     Mutation: {
         createChartOfAccount: async (_root, { input }) => {
             try {
-                console.log(input, "input");
                 if (input.parents_account === null) {
                     const isCreated = await new chartOfAccount_1.default({
                         ...input,
                         is_parents: false,
                         is_top_parents: true,
                     }).save();
-                    console.log(isCreated, "isCreated1111");
                     if (!isCreated) {
                         return {
                             isSuccess: false,
@@ -99,7 +97,6 @@ const departmentResolver = {
                         is_parents: false,
                         is_top_parents: false,
                     }).save();
-                    console.log(isCreated, "isCreated2222");
                     if (!isCreated) {
                         return {
                             isSuccess: false,
@@ -110,7 +107,6 @@ const departmentResolver = {
                         $push: { sub_account: isCreated._id },
                         is_parents: true
                     });
-                    console.log(updateParentsAccount, "updateParentsAccount");
                     if (!updateParentsAccount) {
                         return {
                             isSuccess: false,
