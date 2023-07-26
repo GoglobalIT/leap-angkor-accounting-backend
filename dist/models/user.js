@@ -35,7 +35,8 @@ const userShema = new mongoose_1.Schema({
     user_email: { type: String, },
     user_image_name: { type: String },
     user_image_src: { type: String },
-    role: { type: String, enum: ["Superadmin", "Admin", "User"] },
+    role: { type: String, enum: ["Super Admin", "Admin", "Reader"] },
+    departments_access: [{ type: mongoose_1.default.Types.ObjectId, ref: 'Department', default: [] }],
     status: { type: Boolean, default: true },
 }, { _id: false, timestamps: true });
 userShema.plugin(mongoose_paginate_v2_1.default);

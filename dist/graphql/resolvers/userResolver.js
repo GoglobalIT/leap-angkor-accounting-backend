@@ -167,6 +167,40 @@ const userResolver = {
                     message: "Error, " + error.message
                 };
             }
+        },
+        assignDepartment: async (_root, { user_id, department_id }) => {
+            try {
+                const pushDepartment = await user_1.default.updateOne({ _id: user_id }, { $push: { departments_access: department_id } });
+                if (!pushDepartment) {
+                    return {
+                        isSuccess: false,
+                        message: "Assign Department Unsuccessfully"
+                    };
+                }
+                return {
+                    isSuccess: true,
+                    message: "Assign Department Successfully"
+                };
+            }
+            catch (error) {
+            }
+        },
+        deleteAssignedDepartment: async (_root, { user_id, department_id }) => {
+            try {
+                const pullDepartment = await user_1.default.updateOne({ _id: user_id }, { $pull: { departments_access: department_id } });
+                if (!pullDepartment) {
+                    return {
+                        isSuccess: false,
+                        message: "Delete Assigned Department Unsuccessfully"
+                    };
+                }
+                return {
+                    isSuccess: true,
+                    message: "Delete Assigned Department Successfully"
+                };
+            }
+            catch (error) {
+            }
         }
     }
 };

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const department_1 = __importDefault(require("../../models/department"));
 const paginationLabel_1 = require("../../functions/paginationLabel");
+const user_1 = __importDefault(require("../../models/user"));
 const departmentResolver = {
     Query: {
         getDepartmentById: async (_root, { department_id }) => {
@@ -16,7 +17,7 @@ const departmentResolver = {
                 console.log(error.message);
             }
         },
-        getDepartmentWithPagination: async (_root, { page, limit, keyword, pagination }) => {
+        getDepartmentWithPagination: async (_root, { page, limit, keyword, pagination, userId }) => {
             try {
                 const options = {
                     page: page || 1,
@@ -26,10 +27,22 @@ const departmentResolver = {
                     sort: { createdAt: 1 },
                     populate: '',
                 };
+                let queryByDepartmentAccess = {};
+                if (userId) {
+                    const findUser = await user_1.default.findById(userId);
+                    if (findUser.role === "Admin" || findUser.role === "Reader") {
+                        queryByDepartmentAccess = { _id: { $in: findUser.departments_access } };
+                    }
+                }
                 const query = {
-                    $or: [
-                        { department_name: { $regex: keyword, $options: "i" } },
-                        { code: { $regex: keyword, $options: "i" } },
+                    $and: [
+                        {
+                            $or: [
+                                { department_name: { $regex: keyword, $options: "i" } },
+                                { code: { $regex: keyword, $options: "i" } },
+                            ]
+                        },
+                        queryByDepartmentAccess
                     ]
                 };
                 const getData = await department_1.default.paginate(query, options);

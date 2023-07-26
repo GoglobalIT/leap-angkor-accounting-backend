@@ -1,6 +1,7 @@
 import { iDepartment } from "../../interface/iDepartment";
 import Department from "../../models/department";
 import {paginationLabel} from "../../functions/paginationLabel";
+import User from "../../models/user";
 
 
 const departmentResolver = {
@@ -13,7 +14,7 @@ const departmentResolver = {
         console.log(error.message)
       }
     },
-    getDepartmentWithPagination: async (_root: undefined, {page, limit, keyword, pagination}: {page: number, limit: number, keyword: string, pagination: boolean})=>{
+    getDepartmentWithPagination: async (_root: undefined, {page, limit, keyword, pagination, userId}: {page: number, limit: number, keyword: string, pagination: boolean, userId:string})=>{
       try {
         
         const options = {
@@ -25,10 +26,23 @@ const departmentResolver = {
           populate: '',
         };
 
+        let queryByDepartmentAccess = {}
+        if(userId){
+          const findUser = await User.findById(userId)
+          if(findUser.role === "Admin" || findUser.role === "Reader"){
+            queryByDepartmentAccess = {_id: {$in: findUser.departments_access}}
+          }
+        }
+
         const query = {
-          $or: [
-            { department_name: { $regex: keyword, $options: "i" } },
-            { code: { $regex: keyword, $options: "i" } },
+          $and:[
+            {
+              $or: [
+                { department_name: { $regex: keyword, $options: "i" } },
+                { code: { $regex: keyword, $options: "i" } },
+              ]
+            },
+            queryByDepartmentAccess
           ]
         }
 

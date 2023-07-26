@@ -4,6 +4,7 @@ import GeneralJournal from '../../models/generalJournal';
 import ChartOfAccount from '../../models/chartOfAccount';
 import mongoose from 'mongoose';
 import getBalanceChartAccount from '../../functions/getBalanceByChartAccount';
+import Department from '../../models/department';
 
 
 const dashboardResolver = {
@@ -272,7 +273,7 @@ const dashboardResolver = {
             },
             { $sort: { createdAt: 1 } }
           ])
-
+          // console.log(findAccount, "findAccount")
           const findSummmary = Promise.all(
             findAccount.map(async element => {
               const findSelectedDateBalance = await GeneralJournal.aggregate([
@@ -314,9 +315,13 @@ const dashboardResolver = {
               })
             }
           })
+          
+          const findDepartment = await Department.findById(department_id)
+          const otherAccName = findDepartment.department_name.split("").slice(0, 3).join('').toUpperCase()
+       
           //Push other 
           prepareData.push({
-            account_name: "Other",
+            account_name: `${otherAccName} - Miscellaneous`,
             balance: findOtherSelectedDateBalance,
           })
 

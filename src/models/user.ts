@@ -9,7 +9,8 @@ const userShema = new Schema<iUser>({
     user_email: {type: String,},
     user_image_name: { type: String },
     user_image_src: { type: String },
-    role: {type: String, enum:["Superadmin", "Admin", "User"]}, //for only accounting frontend check
+    role: {type: String, enum:["Super Admin", "Admin", "Reader"]}, //for only accounting frontend check
+    departments_access: [{type: mongoose.Types.ObjectId, ref: 'Department', default: []}],
     status: { type: Boolean, default: true },
 },{ _id: false, timestamps: true })
 

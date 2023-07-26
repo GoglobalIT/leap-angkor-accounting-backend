@@ -10,6 +10,7 @@ const userType = `#graphql
     user_image_name: String
     user_image_src: String 
     role: String
+    departments_access: [Department]
     status: Boolean
     createdAt: Date
     updatedAt: Date
@@ -26,6 +27,7 @@ const userType = `#graphql
     user_image_name: String
     user_image_src: String 
     role: String
+    departments_access: [String]
     status: Boolean
   }
 
@@ -38,6 +40,8 @@ const userType = `#graphql
     createUser(input: UserInput): ResponseMessage
     updateUser(_id: ID!, input: UserInput): ResponseMessage
     deleteUser(_id: ID!): ResponseMessage
+    assignDepartment(user_id: ID!, department_id: ID!): ResponseMessage
+    deleteAssignedDepartment(user_id: ID!, department_id: ID!): ResponseMessage
   }
 `;
 exports.default = userType;

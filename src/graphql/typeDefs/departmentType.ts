@@ -21,7 +21,7 @@ const departmentType = `#graphql
 
   type Query {
     getDepartmentById(department_id: ID!): Department
-    getDepartmentWithPagination(page: Int, limit: Int, keyword: String, pagination: Boolean): DepartmentPaginator
+    getDepartmentWithPagination(page: Int, limit: Int, keyword: String, pagination: Boolean, userId: String): DepartmentPaginator
   }
   type Mutation {
     createDepartment(input: DepartmentInput): ResponseMessage

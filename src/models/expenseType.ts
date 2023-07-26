@@ -5,7 +5,6 @@ import {iExpenseType} from '../interface/iExpenseType'
 
 const expenseTypeSchema = new Schema<iExpenseType>({
     expense_name: String
-
 }, {timestamps: true})
 expenseTypeSchema.plugin(paginate)
 

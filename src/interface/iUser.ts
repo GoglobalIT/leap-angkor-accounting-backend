@@ -8,5 +8,6 @@ export interface iUser{
     user_image_name: string
     user_image_src: string 
     role: string
+    departments_access: string
     status: Boolean
 }     
