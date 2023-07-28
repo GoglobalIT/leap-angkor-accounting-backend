@@ -28,7 +28,7 @@ const generalJournalResolver = {
             catch (error) {
             }
         },
-        getJournalWithPagination: async (_root, { page, limit, keyword, pagination }) => {
+        getJournalWithPagination: async (_root, { page, limit, keyword, pagination, fromDate, toDate }) => {
             try {
                 const options = {
                     page: page || 1,
@@ -38,7 +38,20 @@ const generalJournalResolver = {
                     sort: { createdAt: -1 },
                     populate: 'journal_entries.chart_account_id created_by',
                 };
-                const query = {};
+                let queryByDate = {};
+                if (fromDate && toDate) {
+                    const startDate = new Date(`${fromDate}T00:00:00.000Z`);
+                    const endDate = new Date(`${toDate}T16:59:59.999Z`);
+                    queryByDate = { record_date: { $gte: startDate, $lte: endDate } };
+                }
+                const query = { $and: [
+                        {
+                            $or: [
+                                { memo: { $regex: keyword, $options: "i" } },
+                            ]
+                        },
+                        queryByDate
+                    ] };
                 const getData = await generalJournal_1.default.paginate(query, options);
                 return getData;
             }

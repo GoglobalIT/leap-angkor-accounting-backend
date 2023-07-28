@@ -303,7 +303,7 @@ const dashboardResolver = {
           )
 
           const getSummary = await findSummmary
-          // console.log(getSummary, "getSummary")
+       
           const findOtherSelectedDateBalance = getSummary.filter((e: any) => e.is_parents === true).map((e: any) => e.selectedDateBalance).reduce((a, b) => a + b, 0)
 
           const prepareData = []
@@ -316,12 +316,13 @@ const dashboardResolver = {
             }
           })
           
-          const findDepartment = await Department.findById(department_id)
-          const otherAccName = findDepartment.department_name.split("").slice(0, 3).join('').toUpperCase()
+          // const findDepartment = await Department.findById(department_id)
+          // const otherAccName = findDepartment.department_name.split("").slice(0, 3).join('').toUpperCase()
        
           //Push other 
           prepareData.push({
-            account_name: `${otherAccName} - Miscellaneous`,
+            // account_name: `${otherAccName} - Miscellaneous`,
+            account_name: "Other Expenses",
             balance: findOtherSelectedDateBalance,
           })
 
@@ -402,7 +403,7 @@ const dashboardResolver = {
           })
           //Push other 
           prepareData.push({
-            account_name: "Other",
+            account_name: "Other Revenues",
             balance: findOtherSelectedDateBalance,
           })
 
@@ -484,7 +485,7 @@ const dashboardResolver = {
           })
           //Push other 
           prepareData.push({
-            account_name: "Other",
+            account_name: "Other Cost",
             balance: findOtherSelectedDateBalance,
           })
 

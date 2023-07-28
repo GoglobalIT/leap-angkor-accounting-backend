@@ -44,12 +44,13 @@ const userResolver = {
                     pagination: pagination,
                     customLabels: paginationLabel_1.paginationLabel,
                     sort: { createdAt: -1 },
-                    populate: '',
+                    populate: 'departments_access',
                 };
                 const query = {
                     $or: [
-                        { first_name: { $regex: keyword, $options: "i" } },
-                        { last_name: { $regex: keyword, $options: "i" } },
+                        { user_first_name: { $regex: keyword, $options: "i" } },
+                        { user_last_name: { $regex: keyword, $options: "i" } },
+                        { user_email: { $regex: keyword, $options: "i" } },
                     ]
                 };
                 const getData = await user_1.default.paginate(query, options);
@@ -101,6 +102,7 @@ const userResolver = {
         },
         updateUser: async (_root, { _id, input }) => {
             try {
+                console.log(input, "input");
                 const isExisting = await user_1.default.findOne({ $and: [
                         { user_email: input.user_email },
                         { _id: { $ne: _id } }
@@ -114,7 +116,7 @@ const userResolver = {
                 const isUpdated = await user_1.default.findByIdAndUpdate(_id, input);
                 if (isUpdated) {
                     const uid = _id.toString();
-                    const updateInAuthMS = await AuthAdmin_1.default.updateUser(uid, input.user_email, input.password, input.user_first_name, input.user_last_name, input.role);
+                    const updateInAuthMS = await AuthAdmin_1.default.updateUserInfo(uid, input.user_email, input.user_first_name, input.user_last_name, input.role);
                     if (!updateInAuthMS.status) {
                         return {
                             isSuccess: updateInAuthMS.status,

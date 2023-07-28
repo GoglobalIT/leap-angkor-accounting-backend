@@ -58,7 +58,8 @@ const getBalanceChartAccount = async (chart_account_id: String, start_date: Stri
           chartAccountInfo.account_type === "Cash on hand" || 
           chartAccountInfo.account_type === "Cash in bank" || 
           chartAccountInfo.account_type === "Account Receivable" ||
-          chartAccountInfo.account_type === "Inventory and Fixed assets" ||
+          chartAccountInfo.account_type === "Inventory" ||
+          chartAccountInfo.account_type === "Fixed assets" ||
           chartAccountInfo.account_type === "Expenditures"
           ){
             if(findBalanceDraft.length > 0){

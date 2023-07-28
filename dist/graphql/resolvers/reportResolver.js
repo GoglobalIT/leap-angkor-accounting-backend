@@ -181,6 +181,7 @@ const reportResolver = {
                         {
                             $group: {
                                 _id: "$expense_type_id",
+                                is_parents: { $first: "$is_parents" }
                             }
                         },
                         {
@@ -195,7 +196,8 @@ const reportResolver = {
                         { $sort: { "expense_type.createdAt": 1 } },
                         {
                             $project: {
-                                expense_name: "$expense_type.expense_name"
+                                expense_name: "$expense_type.expense_name",
+                                is_parents: 1
                             }
                         }
                     ]);
@@ -249,6 +251,7 @@ const reportResolver = {
                             const expenseYearToDate = findExpenseYearToDate.length > 0 ? findExpenseYearToDate[0].total_debit - findExpenseYearToDate[0].total_credit : 0;
                             return {
                                 account_name: element.expense_name,
+                                is_parents: element.is_parents,
                                 selectedDateBalance: expenseSelectedDate,
                                 yearToDateBalance: expenseYearToDate
                             };
@@ -264,7 +267,22 @@ const reportResolver = {
                     let totalExpenseSelectedDate = 0;
                     let totalexpenseYearToDate = 0;
                     if (form === '1') {
-                        expense = await expenseByChartAccount;
+                        const getSummary = await expenseByChartAccount;
+                        const findParentsBalance = getSummary.filter((e) => e.is_parents === true).map((e) => e.selectedDateBalance).reduce((a, b) => a + b, 0);
+                        const dataAccountWithOther = [];
+                        getSummary.map((e) => {
+                            if (e.is_parents === false) {
+                                dataAccountWithOther.push({
+                                    account_name: e.account_name,
+                                    balance: e.selectedDateBalance,
+                                });
+                            }
+                        });
+                        dataAccountWithOther.push({
+                            account_name: `Other Expenses`,
+                            balance: findParentsBalance,
+                        });
+                        expense = dataAccountWithOther;
                         totalExpenseSelectedDate = expense.map((e) => e.selectedDateBalance).reduce((a, b) => a + b, 0);
                         totalexpenseYearToDate = expense.map((e) => e.yearToDateBalance).reduce((a, b) => a + b, 0);
                     }
@@ -370,7 +388,7 @@ const reportResolver = {
                             }
                         });
                         prepareData.push({
-                            account_name: "Other",
+                            account_name: "Other Expenses",
                             selectedDateBalance: findOtherSelectedDateBalance,
                             yearToDateBalance: findOtherYearToDateBalance
                         });

@@ -10,7 +10,7 @@ const generalJournalType = `#graphql
     journal_number: Int
     journal_entries: [JournalEntries]
     created_by: User
-    note: String
+    memo: String
     createdAt: Date
     updatedAt: Date
   }
@@ -44,7 +44,7 @@ const generalJournalType = `#graphql
 
   type Query {
     getJournalById(journal_id: ID!): GeneralJournal
-    getJournalWithPagination(page: Int, limit: Int, keyword: String, pagination: Boolean): GeneralJournalPaginator
+    getJournalWithPagination(page: Int, limit: Int, keyword: String, pagination: Boolean, fromDate: String, toDate: String): GeneralJournalPaginator
     getLastJournalNumber: Int
   }
   type Mutation {

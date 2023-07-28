@@ -7,7 +7,6 @@ const generalJournal_1 = __importDefault(require("../../models/generalJournal"))
 const chartOfAccount_1 = __importDefault(require("../../models/chartOfAccount"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const getBalanceByChartAccount_1 = __importDefault(require("../../functions/getBalanceByChartAccount"));
-const department_1 = __importDefault(require("../../models/department"));
 const dashboardResolver = {
     Query: {
         getSummaryIncomeStatment: async (_root, { department_id, fromDate, toDate }) => {
@@ -271,10 +270,8 @@ const dashboardResolver = {
                             });
                         }
                     });
-                    const findDepartment = await department_1.default.findById(department_id);
-                    const otherAccName = findDepartment.department_name.split("").slice(0, 3).join('').toUpperCase();
                     prepareData.push({
-                        account_name: `${otherAccName} - Miscellaneous`,
+                        account_name: "Other Expenses",
                         balance: findOtherSelectedDateBalance,
                     });
                     return prepareData;
@@ -340,7 +337,7 @@ const dashboardResolver = {
                         }
                     });
                     prepareData.push({
-                        account_name: "Other",
+                        account_name: "Other Revenues",
                         balance: findOtherSelectedDateBalance,
                     });
                     return prepareData;
@@ -406,7 +403,7 @@ const dashboardResolver = {
                         }
                     });
                     prepareData.push({
-                        account_name: "Other",
+                        account_name: "Other Cost",
                         balance: findOtherSelectedDateBalance,
                     });
                     return prepareData;

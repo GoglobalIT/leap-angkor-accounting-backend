@@ -127,6 +127,48 @@ class Goglobalauth {
             };
         }
     }
+    async updateUserInfo(user_id, email, firstName, lastName, role) {
+        console.log(user_id, email, firstName, lastName, role, "inputAuth");
+        try {
+            if (!this.verify) {
+                return {
+                    message: "You not register yet!",
+                    status: false
+                };
+            }
+            const user = await (0, axios_1.default)({
+                method: 'post',
+                url: this.url + "/users/updateinfo",
+                data: {
+                    user_id,
+                    email,
+                    firstName,
+                    lastName,
+                    role,
+                    app: this.app
+                }
+            });
+            if (user.data.status) {
+                return {
+                    message: "Update User Info Success!",
+                    status: true,
+                    data: user
+                };
+            }
+            else {
+                return {
+                    message: user.data.message,
+                    status: false,
+                };
+            }
+        }
+        catch (error) {
+            return {
+                message: error.message,
+                status: false,
+            };
+        }
+    }
     async delete(user_id) {
         try {
             if (!this.verify) {

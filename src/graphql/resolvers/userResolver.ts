@@ -37,19 +37,21 @@ const userResolver = {
     },
     getUserWithPagination: async (_root: undefined, {page, limit, keyword, pagination}: {page: number, limit: number, keyword: string, pagination: boolean})=>{
       try {
+    
         const options = {
           page: page || 1,
           limit: limit || 10,
           pagination: pagination,
           customLabels: paginationLabel,
           sort: {createdAt: -1},
-          populate: '',
+          populate: 'departments_access',
         };
 
         const query = {
           $or: [
-            { first_name: { $regex: keyword, $options: "i" } },
-            { last_name: { $regex: keyword, $options: "i" } },
+            { user_first_name: { $regex: keyword, $options: "i" } },
+            { user_last_name: { $regex: keyword, $options: "i" } },
+            { user_email: { $regex: keyword, $options: "i" } },
           ]
         }
 
@@ -103,6 +105,7 @@ const userResolver = {
     },
     updateUser: async (_root: undefined, { _id, input }: { _id: String, input: iUser }) => {
       try {
+        console.log(input, "input")
         const isExisting = await User.findOne({$and:[
           {user_email: input.user_email},
           {_id: {$ne: _id}}
@@ -116,7 +119,7 @@ const userResolver = {
         const isUpdated = await User.findByIdAndUpdate(_id, input);
         if(isUpdated){
             const uid = _id.toString()
-            const updateInAuthMS = await AuthAdmin.updateUser(uid, input.user_email, input.password, input.user_first_name, input.user_last_name, input.role)
+            const updateInAuthMS = await AuthAdmin.updateUserInfo(uid, input.user_email, input.user_first_name, input.user_last_name, input.role)
             if(!updateInAuthMS.status){
               return {
                 isSuccess: updateInAuthMS.status,

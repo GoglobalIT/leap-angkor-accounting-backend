@@ -7,6 +7,7 @@ const userShema = new Schema<iUser>({
     user_first_name: { type: String, required: true },
     user_last_name: { type: String, required: true },
     user_email: {type: String,},
+    // password: String,
     user_image_name: { type: String },
     user_image_src: { type: String },
     role: {type: String, enum:["Super Admin", "Admin", "Reader"]}, //for only accounting frontend check

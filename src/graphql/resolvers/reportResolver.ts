@@ -219,6 +219,7 @@ const reportResolver = {
                         {
                             $group: {
                                 _id: "$expense_type_id",
+                                is_parents: {$first:"$is_parents"}
                             }
                         },
                         {
@@ -233,11 +234,12 @@ const reportResolver = {
                         { $sort: { "expense_type.createdAt": 1 } },
                         {
                             $project: {
-                                expense_name: "$expense_type.expense_name"
+                                expense_name: "$expense_type.expense_name",
+                                is_parents: 1
                             }
                         }
                     ])
-
+                  
                     const expenseByChartAccount = Promise.all(
                         allExpenseAccount.map(async (element) => {
                             if (element !== null) {
@@ -260,6 +262,7 @@ const reportResolver = {
                                             _id: null,
                                             total_debit: { $sum: "$journal_entries.debit" },
                                             total_credit: { $sum: "$journal_entries.credit" },
+                                         
                                         }
                                     },
                                 ])
@@ -285,6 +288,7 @@ const reportResolver = {
                                             _id: null,
                                             total_debit: { $sum: "$journal_entries.debit" },
                                             total_credit: { $sum: "$journal_entries.credit" },
+                                           
                                         }
                                     },
                                 ])
@@ -293,6 +297,7 @@ const reportResolver = {
 
                                 return {
                                     account_name: element.expense_name,
+                                    is_parents: element.is_parents,
                                     selectedDateBalance: expenseSelectedDate,
                                     yearToDateBalance: expenseYearToDate
                                 }
@@ -314,10 +319,30 @@ const reportResolver = {
                     let totalExpenseSelectedDate = 0
                     let totalexpenseYearToDate = 0
                     if (form === '1') {
-                        expense = await expenseByChartAccount
+                        const getSummary = await expenseByChartAccount
+                        const findParentsBalance = getSummary.filter((e: any) => e.is_parents === true).map((e: any) => e.selectedDateBalance).reduce((a, b) => a + b, 0)
+                        const dataAccountWithOther = []
+                        getSummary.map((e: any) => {
+                          if (e.is_parents === false) {
+                            dataAccountWithOther.push({
+                              account_name: e.account_name,
+                              balance: e.selectedDateBalance,
+                            })
+                          }
+                        })
+                        // const findDepartment = await Department.findById(department_id)
+                        // const otherAccName = findDepartment.department_name.split("").slice(0, 3).join('').toUpperCase()
+                        //Push other 
+                        dataAccountWithOther.push({
+                          account_name: `Other Expenses`,
+                          balance: findParentsBalance,
+                        })
+                        // console.log(dataAccountWithOther, "dataAccountWithOther")
+                        expense = dataAccountWithOther
                         totalExpenseSelectedDate = expense.map((e: any) => e.selectedDateBalance).reduce((a: any, b: any) => a + b, 0)
                         totalexpenseYearToDate = expense.map((e: any) => e.yearToDateBalance).reduce((a: any, b: any) => a + b, 0)
                     } else {
+                        
                         expense = await summmaryByDepartment("Expenditures", "Debit")
                         totalExpenseSelectedDate = expense.map((e: any) => e.selectedDateBalance).reduce((a: any, b: any) => a + b, 0)
                         totalexpenseYearToDate = expense.map((e: any) => e.yearToDateBalance).reduce((a: any, b: any) => a + b, 0)
@@ -438,7 +463,7 @@ const reportResolver = {
                         })
                         //Push other 
                         prepareData.push({
-                            account_name: "Other",
+                            account_name: "Other Expenses",
                             selectedDateBalance: findOtherSelectedDateBalance,
                             yearToDateBalance: findOtherYearToDateBalance
                         })

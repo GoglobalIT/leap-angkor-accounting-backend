@@ -7,6 +7,7 @@ const userType = `#graphql
     user_first_name: String
     user_last_name: String
     user_email: String
+    # password: String
     user_image_name: String
     user_image_src: String 
     role: String
@@ -23,7 +24,7 @@ const userType = `#graphql
     user_first_name: String
     user_last_name: String
     user_email: String
-    password: String
+    # password: String
     user_image_name: String
     user_image_src: String 
     role: String
