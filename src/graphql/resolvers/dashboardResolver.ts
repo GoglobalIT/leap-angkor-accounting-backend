@@ -9,7 +9,7 @@ import Department from '../../models/department';
 
 const dashboardResolver = {
   Query: {
-    getSummaryIncomeStatment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: String, toDate: String }) => {
+    getSummaryIncomeStatment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: string, toDate: string }) => {
       try {
         let selected_date = {}
 
