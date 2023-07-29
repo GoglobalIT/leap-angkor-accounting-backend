@@ -200,7 +200,7 @@ const dashboardResolver = {
                                 total_debit: { $sum: "$journal_entries.debit" },
                             }
                         },
-                        { $addFields: { total_balance: { $subtract: ["$total_debit", "$total_credit"] } } }
+                        { $addFields: { total_balance: { $subtract: ["$total_credit", "$total_debit"] } } }
                     ]);
                     const APData = await findAP;
                     const totalBalanceAP = APData.length === 1 ? APData[0].total_balance : 0;
