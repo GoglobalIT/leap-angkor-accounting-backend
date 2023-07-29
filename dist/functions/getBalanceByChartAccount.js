@@ -47,7 +47,7 @@ const getBalanceChartAccount = async (chart_account_id, start_date, end_date) =>
             chartAccountInfo.account_type === "Cash in bank" ||
             chartAccountInfo.account_type === "Account Receivable" ||
             chartAccountInfo.account_type === "Inventory" ||
-            chartAccountInfo.account_type === "Fixed assets" ||
+            chartAccountInfo.account_type === "Fixed Assets" ||
             chartAccountInfo.account_type === "Expenditures") {
             if (findBalanceDraft.length > 0) {
                 total_account_balance.total_debit = findBalanceDraft[0].total_debit;
