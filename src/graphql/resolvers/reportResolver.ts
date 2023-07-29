@@ -320,13 +320,17 @@ const reportResolver = {
                     let totalexpenseYearToDate = 0
                     if (form === '1') {
                         const getSummary = await expenseByChartAccount
-                        const findParentsBalance = getSummary.filter((e: any) => e.is_parents === true).map((e: any) => e.selectedDateBalance).reduce((a, b) => a + b, 0)
+                        const parentsBalanceSelectedDate = getSummary.filter((e: any) => e.is_parents === true).map((e: any) => e.selectedDateBalance).reduce((a, b) => a + b, 0)
+                        const parentsBalanceYearToDate = getSummary.filter((e: any) => e.is_parents === true).map((e: any) => e.yearToDateBalance).reduce((a, b) => a + b, 0)
+
                         const dataAccountWithOther = []
                         getSummary.map((e: any) => {
+                           
                           if (e.is_parents === false) {
                             dataAccountWithOther.push({
                               account_name: e.account_name,
-                              balance: e.selectedDateBalance,
+                              selectedDateBalance: e.selectedDateBalance,
+                              yearToDateBalance: e.yearToDateBalance
                             })
                           }
                         })
@@ -335,7 +339,8 @@ const reportResolver = {
                         //Push other 
                         dataAccountWithOther.push({
                           account_name: `Other Expenses`,
-                          balance: findParentsBalance,
+                          selectedDateBalance: parentsBalanceSelectedDate,
+                          yearToDateBalance: parentsBalanceYearToDate
                         })
                         // console.log(dataAccountWithOther, "dataAccountWithOther")
                         expense = dataAccountWithOther
@@ -353,7 +358,7 @@ const reportResolver = {
 
                     const netIncomeSelectedDateBalance = grossProfitSelectedDateBalance - totalExpenseSelectedDate
                     const netIncomeYearToDateBalance = grossProfitYearToDateBalance - totalexpenseYearToDate
-
+                    // console.log(expense, "expense")
                     return {
                         revenues: revenues,
                         totalRevenue: {
@@ -386,7 +391,7 @@ const reportResolver = {
 
                     //@Find Revenue Cost and Expense by all department
                     let summmaryByDepartment = async (accountType: string, increase: string) => {
-                        const findAccount = await ChartOfAccount.aggregate([
+                        const findAccount  = await ChartOfAccount.aggregate([
                             { $match: { account_type: accountType } },
                             { $match: { department_id: new mongoose.Types.ObjectId(department_id) } },
                             {
@@ -397,10 +402,10 @@ const reportResolver = {
                             },
                             { $sort: { createdAt: 1 } }
                         ])
-
+                        // console.log(findAccount, "findAccount")
 
                         const findSummmary = Promise.all(
-                            findAccount.map(async element => {
+                            findAccount.map(async (element:any) => {
 
                                 const findSelectedDateBalance = await GeneralJournal.aggregate([
                                     { $unwind: "$journal_entries" },
@@ -463,7 +468,7 @@ const reportResolver = {
                         })
                         //Push other 
                         prepareData.push({
-                            account_name: "Other Expenses",
+                            account_name: `Other ${accountType}`,
                             selectedDateBalance: findOtherSelectedDateBalance,
                             yearToDateBalance: findOtherYearToDateBalance
                         })

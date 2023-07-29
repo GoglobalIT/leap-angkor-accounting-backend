@@ -57,7 +57,7 @@ const departmentResolver = {
         const departmentQuery = department_id.length > 0 ? {department_id: {$in: department_id}} : {} 
         const accountTypeQuery = account_type.length > 0 ? {account_type: {$in: account_type}} : {}
         const getChartOfAccountList = await ChartOfAccount.find({$and:[
-          {is_parents: false},
+          // {is_parents: false},
           departmentQuery,
           accountTypeQuery
         ]}).populate('department_id sub_account parents_account')

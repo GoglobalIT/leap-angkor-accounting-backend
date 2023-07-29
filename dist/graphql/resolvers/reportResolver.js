@@ -268,19 +268,22 @@ const reportResolver = {
                     let totalexpenseYearToDate = 0;
                     if (form === '1') {
                         const getSummary = await expenseByChartAccount;
-                        const findParentsBalance = getSummary.filter((e) => e.is_parents === true).map((e) => e.selectedDateBalance).reduce((a, b) => a + b, 0);
+                        const parentsBalanceSelectedDate = getSummary.filter((e) => e.is_parents === true).map((e) => e.selectedDateBalance).reduce((a, b) => a + b, 0);
+                        const parentsBalanceYearToDate = getSummary.filter((e) => e.is_parents === true).map((e) => e.yearToDateBalance).reduce((a, b) => a + b, 0);
                         const dataAccountWithOther = [];
                         getSummary.map((e) => {
                             if (e.is_parents === false) {
                                 dataAccountWithOther.push({
                                     account_name: e.account_name,
-                                    balance: e.selectedDateBalance,
+                                    selectedDateBalance: e.selectedDateBalance,
+                                    yearToDateBalance: e.yearToDateBalance
                                 });
                             }
                         });
                         dataAccountWithOther.push({
                             account_name: `Other Expenses`,
-                            balance: findParentsBalance,
+                            selectedDateBalance: parentsBalanceSelectedDate,
+                            yearToDateBalance: parentsBalanceYearToDate
                         });
                         expense = dataAccountWithOther;
                         totalExpenseSelectedDate = expense.map((e) => e.selectedDateBalance).reduce((a, b) => a + b, 0);
@@ -388,7 +391,7 @@ const reportResolver = {
                             }
                         });
                         prepareData.push({
-                            account_name: "Other Expenses",
+                            account_name: `Other ${accountType}`,
                             selectedDateBalance: findOtherSelectedDateBalance,
                             yearToDateBalance: findOtherYearToDateBalance
                         });

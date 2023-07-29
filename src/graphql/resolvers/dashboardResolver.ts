@@ -322,7 +322,7 @@ const dashboardResolver = {
           //Push other 
           prepareData.push({
             // account_name: `${otherAccName} - Miscellaneous`,
-            account_name: "Other Expenses",
+            account_name: "Other Expenditures",
             balance: findOtherSelectedDateBalance,
           })
 

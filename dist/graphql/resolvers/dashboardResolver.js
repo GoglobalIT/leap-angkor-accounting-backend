@@ -271,7 +271,7 @@ const dashboardResolver = {
                         }
                     });
                     prepareData.push({
-                        account_name: "Other Expenses",
+                        account_name: "Other Expenditures",
                         balance: findOtherSelectedDateBalance,
                     });
                     return prepareData;
