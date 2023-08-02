@@ -72,6 +72,7 @@ const reportType = `#graphql
         balanceSheetReport(year: Date, month: Date): BalanceSheetReport
         incomeStatementReport(department_id: String, fromDate: Date, toDate: Date, form: String): IncomeStatementReport
         generalLedgerReport(fromDate: Date, toDate: Date): GeneralLedgerReport
+        closeReport(dateTime: String): ResponseMessage
     }
 
 `;

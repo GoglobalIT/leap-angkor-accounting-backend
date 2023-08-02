@@ -20,98 +20,167 @@ const reportResolver = {
 
                 const last_month_to_date = moment(curr_month_to_date).subtract(1, 'months').format("YYYY-MM-DD")
                 const last_month_from_date = moment(last_month_to_date).format("YYYY-01-01")
-            
-                const balanceSheet = async (accountType: Array<string>, start_date: string, end_date: string) => {
 
-                    // const last_month_to_date = moment(end_date).subtract(1, 'months').format("YYYY-MM-DD")
-                    // const last_month_from_date = moment(last_month_to_date).format("YYYY-01-01")
+                //============================== Test Another Style ====================================
+                    const balanceSheetTest = async (accountType: Array<string>, start_date: string, end_date: string) => {
 
-                    //@Parent Account, we need it becasue it already have tree data form
-                    const getParentsChartAccount = await ChartOfAccount.find({
-                        $and: [
-                            { is_top_parents: true },
-                            { department_id: '64a52c65ad409eb75c87d8e1' },
-                            { account_type: { $in: accountType } },
-                        ]
-                    })
-                    //@All Account by many chart account type, we need to find balance for each account for use it in RECURSIVE Function
-                    const getAccountByType = await ChartOfAccount.find({
-                        $and: [
-                            { department_id: '64a52c65ad409eb75c87d8e1' },
-                            { account_type: { $in: accountType } },
-                        ]
-                    })
-                    //@Find Balance of each account with getBalanceChartAccount() function
-                    const findBalanceOfChartAccount = Promise.all(
-                        getAccountByType.map(async element => {
-                            const currentMonthBalance = await getBalanceChartAccount(element._id.toString(), start_date, end_date)
-                            const lastMonthBalance = await getBalanceChartAccount(element._id.toString(), last_month_from_date, last_month_to_date)
-
-                            return {
-                                _id: element._id,
-                                account_name: element.account_name,
-                                total_balance: {
+                        //@Parent Account, we need it becasue it already have tree data form
+                        const getParentsChartAccount: any = await ChartOfAccount.find(
+                            {
+                                $and: [
+                                    { is_top_parents: true },
+                                    { department_id: '64a52c65ad409eb75c87d8e1' },
+                                    { account_type: { $in: accountType } },
+                                ]
+                            },
+                            {
+                                _id: 1,
+                                account_type: 1,
+                                account_name: 1,
+                                is_parents: 1,
+                                sub_account: 1,
+                                department_id: 0,
+                                expense_type_id: 0,
+                                parents_account: 0,
+                            }
+                        )
+                        // console.log(getParentsChartAccount, "getParentsChartAccount")
+                        
+                        const balanceSheetData = Promise.all(
+                            getParentsChartAccount.map(async (element: any) => {
+                                const currentMonthBalance = await getBalanceChartAccount(element._id.toString(), start_date, end_date)
+                                const lastMonthBalance = await getBalanceChartAccount(element._id.toString(), last_month_from_date, last_month_to_date)
+                                const totalBalance = {
                                     current_month_balance: currentMonthBalance.total_balance,
                                     last_month_balance: lastMonthBalance.total_balance
                                 }
-                            }
-                        })
-                    )
-                    const ChartAccountWithBalance = await findBalanceOfChartAccount
-                    
-
-                    // ***RECURSIVE Function */ find balance of a parents account from top parent to the last sub-account with tree data form
-                    const generateBalanceTreeData = (chartAccountInfo: any, chartAccountWithBalance: Array<any>) => {
-                        let chart_account_tree_data = chartAccountInfo
-                        const findBalanceByAccountId = chartAccountWithBalance.find(e => e._id + "" === chartAccountInfo._id + "")
-                        if (findBalanceByAccountId) {
-                            chart_account_tree_data.total_balance = findBalanceByAccountId.total_balance
-                        }
-                        if (chart_account_tree_data.sub_account.length > 0) {
-                            chart_account_tree_data.sub_account.map(async (element: any) => {
-                                generateBalanceTreeData(element, chartAccountWithBalance)
+                                // console.log(totalBalance, "totalBalance")
+                                let subAccount: any = []
+                                if(element.sub_account.length > 0){
+                                    // console.log(element.sub_account)
+                                    const findForSubAccount: any = Promise.all(
+                                        element.sub_account.map(async (e: any)=>{
+                                            const currentMonthBalance = await getBalanceChartAccount(e._id.toString(), start_date, end_date)
+                                            const lastMonthBalance = await getBalanceChartAccount(e._id.toString(), last_month_from_date, last_month_to_date)
+                                            return {
+                                                account_name: e.account_name,
+                                                total_balance: {
+                                                    current_month_balance: currentMonthBalance.total_balance,
+                                                    last_month_balance: lastMonthBalance.total_balance
+                                                },  
+                                            }
+                                        })
+                                    )
+                                    // console.log(await findForSubAccount, "findForSubAccount")
+                                    subAccount = await findForSubAccount
+                                }
+                                // console.log(subAccount, "subAccount")
+                                return{
+                                    account_name: element.account_name,
+                                    total_balance: totalBalance,
+                                    sub_account: subAccount
+                                }
                             })
-                        }
+                        )
 
-                        return chart_account_tree_data
+                        return balanceSheetData
                     }
 
-                    //@Find balance of all parents account by use generateBalanceTreeData()
-                    const generateBalanceSheet = getParentsChartAccount.map(element => {
-                        const generateElement = generateBalanceTreeData(element, ChartAccountWithBalance)
-                        return generateElement
-                    })
+
+                //================================ Test Another Style ========================================
+            
+                // const balanceSheet = async (accountType: Array<string>, start_date: string, end_date: string) => {
+
+                //     // const last_month_to_date = moment(end_date).subtract(1, 'months').format("YYYY-MM-DD")
+                //     // const last_month_from_date = moment(last_month_to_date).format("YYYY-01-01")
+
+                //     //@Parent Account, we need it becasue it already have tree data form
+                //     const getParentsChartAccount = await ChartOfAccount.find({
+                //         $and: [
+                //             { is_top_parents: true },
+                //             { department_id: '64a52c65ad409eb75c87d8e1' },
+                //             { account_type: { $in: accountType } },
+                //         ]
+                //     })
+                //     //@All Account by many chart account type, we need to find balance for each account for use it in RECURSIVE Function
+                //     const getAccountByType = await ChartOfAccount.find({
+                //         $and: [
+                //             { department_id: '64a52c65ad409eb75c87d8e1' },
+                //             { account_type: { $in: accountType } },
+                //         ]
+                //     })
+                //     //@Find Balance of each account with getBalanceChartAccount() function
+                //     const findBalanceOfChartAccount = Promise.all(
+                //         getAccountByType.map(async element => {
+                //             const currentMonthBalance = await getBalanceChartAccount(element._id.toString(), start_date, end_date)
+                //             const lastMonthBalance = await getBalanceChartAccount(element._id.toString(), last_month_from_date, last_month_to_date)
+
+                //             return {
+                //                 _id: element._id,
+                //                 account_name: element.account_name,
+                //                 total_balance: {
+                //                     current_month_balance: currentMonthBalance.total_balance,
+                //                     last_month_balance: lastMonthBalance.total_balance
+                //                 }
+                //             }
+                //         })
+                //     )
+                //     const ChartAccountWithBalance = await findBalanceOfChartAccount
                     
-                    //@Find other balance or own balance of parent account, if parents account has it own balance we need to add other account into sub-account
-                    const finalBalance = generateBalanceSheet.map(element => {
-                        const totalBalanceSubAccountCurrMonth = element.sub_account.map((e: any) => e.total_balance.current_month_balance).reduce((a: any, b: any) => a + b, 0)
-                        const totalBalanceSubAccountLastMonth = element.sub_account.map((e: any) => e.total_balance.last_month_balance).reduce((a: any, b: any) => a + b, 0)
 
-                        if (totalBalanceSubAccountCurrMonth < element.total_balance.current_month_balance || 
-                            totalBalanceSubAccountLastMonth < element.total_balance.last_month_balance) {
-                            const newElement = element
-                            newElement.sub_account.push({
-                                account_name: "Other",
-                                total_balance: {
-                                    current_month_balance: element.total_balance.current_month_balance - totalBalanceSubAccountCurrMonth,
-                                    last_month_balance: element.total_balance.last_month_balance - totalBalanceSubAccountLastMonth
-                                },
+                //     // ***RECURSIVE Function */ find balance of a parents account from top parent to the last sub-account with tree data form
+                //     const generateBalanceTreeData = (chartAccountInfo: any, chartAccountWithBalance: Array<any>) => {
+                //         let chart_account_tree_data = chartAccountInfo
+                //         const findBalanceByAccountId = chartAccountWithBalance.find(e => e._id + "" === chartAccountInfo._id + "")
+                //         if (findBalanceByAccountId) {
+                //             chart_account_tree_data.total_balance = findBalanceByAccountId.total_balance
+                //         }
+                //         if (chart_account_tree_data.sub_account.length > 0) {
+                //             chart_account_tree_data.sub_account.map(async (element: any) => {
+                //                 generateBalanceTreeData(element, chartAccountWithBalance)
+                //             })
+                //         }
+
+                //         return chart_account_tree_data
+                //     }
+
+                //     //@Find balance of all parents account by use generateBalanceTreeData()
+                //     const generateBalanceSheet = getParentsChartAccount.map(element => {
+                //         const generateElement = generateBalanceTreeData(element, ChartAccountWithBalance)
+                //         return generateElement
+                //     })
+                    
+                //     //@Find other balance or own balance of parent account, if parents account has it own balance we need to add other account into sub-account
+                //     const finalBalance = generateBalanceSheet.map(element => {
+                //         const totalBalanceSubAccountCurrMonth = element.sub_account.map((e: any) => e.total_balance.current_month_balance).reduce((a: any, b: any) => a + b, 0)
+                //         const totalBalanceSubAccountLastMonth = element.sub_account.map((e: any) => e.total_balance.last_month_balance).reduce((a: any, b: any) => a + b, 0)
+
+                //         if (totalBalanceSubAccountCurrMonth < element.total_balance.current_month_balance || 
+                //             totalBalanceSubAccountLastMonth < element.total_balance.last_month_balance) {
+                //             const newElement = element
+                //             newElement.sub_account.push({
+                //                 account_name: "Other",
+                //                 total_balance: {
+                //                     current_month_balance: element.total_balance.current_month_balance - totalBalanceSubAccountCurrMonth,
+                //                     last_month_balance: element.total_balance.last_month_balance - totalBalanceSubAccountLastMonth
+                //                 },
                                 
-                            })
-                            return newElement
-                        } else {
-                            return element
-                        }
+                //             })
+                //             return newElement
+                //         } else {
+                //             return element
+                //         }
 
-                    })
+                //     })
                 
-                    return finalBalance
+                //     return finalBalance
 
-                }
+                // }
 
-                const getBalanceSheetAsset = await balanceSheet(['Cash on hand', 'Cash in bank', 'Account Receivable', 'Inventory', 'Fixed Assets'], curr_month_from_date, curr_month_to_date)
-                const getBalanceSheetLiability = await balanceSheet(['Account Payable'], curr_month_from_date, curr_month_to_date)
-                const getBalanceSheetEquity = await balanceSheet(['Revenues', 'Cost', 'Expenditures', 'Capitals'], curr_month_from_date, curr_month_to_date)
+                const getBalanceSheetAsset: any = await balanceSheetTest(['Cash on hand', 'Cash in bank', 'Account Receivable', 'Inventory', 'Fixed Assets'], curr_month_from_date, curr_month_to_date)
+                // console.log(getBalanceSheetAsset, "getBalanceSheetAsset")
+                const getBalanceSheetLiability: any = await balanceSheetTest(['Account Payable'], curr_month_from_date, curr_month_to_date)
+                const getBalanceSheetEquity:any = await balanceSheetTest(['Revenues', 'Cost', 'Expenditures', 'Capitals'], curr_month_from_date, curr_month_to_date)
             
                 //@===================== find Retained Earning from income statment report ===================
                 // const endpoint = 'http://localhost:4400/graphql';
@@ -177,18 +246,18 @@ const reportResolver = {
                 let balanceSheetData = {
                     asset: getBalanceSheetAsset,
                     total_asset: {
-                        current_month_balance: getBalanceSheetAsset.length > 0 ? getBalanceSheetAsset.map(e => e.total_balance.current_month_balance).reduce((a, b) => a + b, 0) : 0,
-                        last_month_balance: getBalanceSheetAsset.length > 0 ? getBalanceSheetAsset.map(e => e.total_balance.last_month_balance).reduce((a, b) => a + b, 0) : 0
+                        current_month_balance: getBalanceSheetAsset.length > 0 ? getBalanceSheetAsset.map((e:any) => e.total_balance.current_month_balance).reduce((a: any, b: any) => a + b, 0) : 0,
+                        last_month_balance: getBalanceSheetAsset.length > 0 ? getBalanceSheetAsset.map((e:any) => e.total_balance.last_month_balance).reduce((a: any, b: any) => a + b, 0) : 0
                     },
                     liability: getBalanceSheetLiability,
                     total_liability: {
-                        current_month_balance: getBalanceSheetLiability.length > 0 ? getBalanceSheetLiability.map(e => e.total_balance.current_month_balance).reduce((a, b) => a + b, 0) : 0,
-                        last_month_balance: getBalanceSheetLiability.length > 0 ? getBalanceSheetLiability.map(e => e.total_balance.last_month_balance).reduce((a, b) => a + b, 0) : 0
+                        current_month_balance: getBalanceSheetLiability.length > 0 ? getBalanceSheetLiability.map((e:any) => e.total_balance.current_month_balance).reduce((a: any, b: any) => a + b, 0) : 0,
+                        last_month_balance: getBalanceSheetLiability.length > 0 ? getBalanceSheetLiability.map((e:any) => e.total_balance.last_month_balance).reduce((a: any, b: any) => a + b, 0) : 0
                     },
                     equity: getBalanceSheetEquity,
                     total_equity: {
-                        current_month_balance: getBalanceSheetEquity.length > 0 ? getBalanceSheetEquity.map(e => e.total_balance.current_month_balance).reduce((a, b) => a + b, 0) : 0,
-                        last_month_balance: getBalanceSheetEquity.length > 0 ? getBalanceSheetEquity.map(e => e.total_balance.last_month_balance).reduce((a, b) => a + b, 0) : 0
+                        current_month_balance: getBalanceSheetEquity.length > 0 ? getBalanceSheetEquity.map((e:any) => e.total_balance.current_month_balance).reduce((a: any, b: any) => a + b, 0) : 0,
+                        last_month_balance: getBalanceSheetEquity.length > 0 ? getBalanceSheetEquity.map((e:any) => e.total_balance.last_month_balance).reduce((a: any, b: any) => a + b, 0) : 0
                     },
                     total_liability_and_equity: {
                         current_month_balance: 0,
@@ -753,6 +822,35 @@ const reportResolver = {
                 return finalGeneralLedger
             } catch (error) {
 
+            }
+        },
+        closeReport: async(_root: undefined, {dateTime}:{dateTime: string})=>{
+            try {
+            
+                const closeDate = new Date(dateTime)
+ 
+                const updateJournal = await GeneralJournal.updateMany(
+                    {$and:[
+                        {createdAt:{$lte: closeDate}},
+                        {isClosedRepord: false},
+                        {isDeleted: false},
+                    ]},
+                    {$set:{isClosedRepord: true}}
+                )
+    
+                if(!updateJournal){
+                    return{
+                        isSuccess: false,
+                        message: "Close Report Unsuccessful"
+                    }
+                }
+
+                return{
+                    isSuccess: true,
+                    message: "Close Report Successfully"
+                }
+            } catch (error) {
+                
             }
         }
     }
