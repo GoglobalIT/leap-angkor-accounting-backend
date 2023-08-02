@@ -148,6 +148,8 @@ const reportResolver = {
                     variables: variablesLastMonth,
                     // requestHeaders,
                 })
+                // console.log(currMonthNetIncome, "currMonthNetIncome")
+                // console.log(lastMonthNetIncome, "lastMonthNetIncome")
                 if(currMonthNetIncome && lastMonthNetIncome){
                     getBalanceSheetEquity.push({
                         account_name: "Retained Earning",
@@ -167,6 +169,7 @@ const reportResolver = {
                         ]
                     })
                 }
+               
                 //============================ Retained Earning ==========================
      
                 
@@ -229,6 +232,7 @@ const reportResolver = {
                                 })
                                 const allAccount = findAccount.map(e => e._id)
                                 const findSelectedDateBalance = await GeneralJournal.aggregate([
+                                    { $match: {isDeleted: false}},
                                     { $unwind: "$journal_entries" },
                                     { $match: selected_date },
                                     { $match: { "journal_entries.chart_account_id": { $in: allAccount } } },
@@ -240,12 +244,14 @@ const reportResolver = {
                                         }
                                     },
                                 ])
+                                // console.log(findSelectedDateBalance, "findSelectedDateBalance")
                                 let selectedDateBalance = findSelectedDateBalance.length > 0 ? findSelectedDateBalance[0].total_credit - findSelectedDateBalance[0].total_debit : 0
                                 if (increase === "Debit") {
                                     selectedDateBalance = findSelectedDateBalance.length > 0 ? findSelectedDateBalance[0].total_debit - findSelectedDateBalance[0].total_credit : 0
                                 }
 
                                 const findYearToDateBalance = await GeneralJournal.aggregate([
+                                    { $match: {isDeleted: false}},
                                     { $unwind: "$journal_entries" },
                                     { $match: year_to_date },
                                     { $match: { "journal_entries.chart_account_id": { $in: allAccount } } },
@@ -304,6 +310,7 @@ const reportResolver = {
                         allExpenseAccount.map(async (element) => {
                             if (element !== null) {
                                 const findExpenseSelectedDate = await GeneralJournal.aggregate([
+                                    { $match: {isDeleted: false}},
                                     { $match: selected_date },
                                     { $unwind: "$journal_entries" },
                                     {
@@ -330,6 +337,7 @@ const reportResolver = {
                                 const expenseSelectedDate = findExpenseSelectedDate.length > 0 ? findExpenseSelectedDate[0].total_debit - findExpenseSelectedDate[0].total_credit : 0
 
                                 const findExpenseYearToDate = await GeneralJournal.aggregate([
+                                    { $match: {isDeleted: false}},
                                     { $match: selected_date },
                                     { $unwind: "$journal_entries" },
                                     {
@@ -468,6 +476,7 @@ const reportResolver = {
                             findAccount.map(async (element:any) => {
 
                                 const findSelectedDateBalance = await GeneralJournal.aggregate([
+                                    { $match: {isDeleted: false}},
                                     { $unwind: "$journal_entries" },
                                     { $match: selected_date },
                                     { $match: { "journal_entries.chart_account_id": element._id } },
@@ -486,6 +495,7 @@ const reportResolver = {
                                 }
 
                                 const findYearToDateBalance = await GeneralJournal.aggregate([
+                                    { $match: {isDeleted: false}},
                                     { $unwind: "$journal_entries" },
                                     { $match: year_to_date },
                                     { $match: { "journal_entries.chart_account_id": element._id } },
@@ -629,6 +639,7 @@ const reportResolver = {
 
                 //*** All Journal Entries for General Ledger*/
                 const allJournalEntries = await GeneralJournal.aggregate([
+                    { $match: {isDeleted: false}},
                     { $match: selected_date },
                     { $unwind: "$journal_entries" },
                     {
@@ -715,6 +726,7 @@ const reportResolver = {
 
                 //**Find total debit and credit of General Ledger*/
                 const totalBalanceGeneralLedger = await GeneralJournal.aggregate([
+                    { $match: {isDeleted: false}},
                     { $match: selected_date },
                     { $unwind: "$journal_entries" },
                     {

@@ -19,7 +19,7 @@ const generalJournalResolver = {
         getLastJournalNumber: async (_root, {}) => {
             try {
                 let journalNumber = 1;
-                const getLastJournal = await generalJournal_1.default.findOne({}).sort({ createdAt: -1 }).limit(1);
+                const getLastJournal = await generalJournal_1.default.findOne({ isDeleted: false }).sort({ createdAt: -1 }).limit(1);
                 if (getLastJournal) {
                     journalNumber = getLastJournal.journal_number + 1;
                 }
@@ -50,7 +50,8 @@ const generalJournalResolver = {
                                 { memo: { $regex: keyword, $options: "i" } },
                             ]
                         },
-                        queryByDate
+                        queryByDate,
+                        { isDeleted: false }
                     ] };
                 const getData = await generalJournal_1.default.paginate(query, options);
                 return getData;
@@ -64,7 +65,7 @@ const generalJournalResolver = {
         createJournal: async (_root, { input }) => {
             try {
                 let journalNumber = 1;
-                const getLastJournal = await generalJournal_1.default.findOne({}).sort({ createdAt: -1 }).limit(1);
+                const getLastJournal = await generalJournal_1.default.findOne({ isDeleted: false }).sort({ createdAt: -1 }).limit(1);
                 if (getLastJournal) {
                     journalNumber = getLastJournal.journal_number + 1;
                 }
@@ -113,8 +114,8 @@ const generalJournalResolver = {
         },
         deleteJournal: async (_root, { journal_id }) => {
             try {
-                const isDeleted = await generalJournal_1.default.findByIdAndDelete(journal_id);
-                if (!isDeleted) {
+                const isDeletedUpdate = await generalJournal_1.default.findByIdAndUpdate(journal_id, { isDeleted: true });
+                if (!isDeletedUpdate) {
                     return {
                         isSuccess: false,
                         message: "Delete JournalUnsuccessful !"

@@ -188,6 +188,7 @@ const reportResolver = {
                             });
                             const allAccount = findAccount.map(e => e._id);
                             const findSelectedDateBalance = await generalJournal_1.default.aggregate([
+                                { $match: { isDeleted: false } },
                                 { $unwind: "$journal_entries" },
                                 { $match: selected_date },
                                 { $match: { "journal_entries.chart_account_id": { $in: allAccount } } },
@@ -204,6 +205,7 @@ const reportResolver = {
                                 selectedDateBalance = findSelectedDateBalance.length > 0 ? findSelectedDateBalance[0].total_debit - findSelectedDateBalance[0].total_credit : 0;
                             }
                             const findYearToDateBalance = await generalJournal_1.default.aggregate([
+                                { $match: { isDeleted: false } },
                                 { $unwind: "$journal_entries" },
                                 { $match: year_to_date },
                                 { $match: { "journal_entries.chart_account_id": { $in: allAccount } } },
@@ -255,6 +257,7 @@ const reportResolver = {
                     const expenseByChartAccount = Promise.all(allExpenseAccount.map(async (element) => {
                         if (element !== null) {
                             const findExpenseSelectedDate = await generalJournal_1.default.aggregate([
+                                { $match: { isDeleted: false } },
                                 { $match: selected_date },
                                 { $unwind: "$journal_entries" },
                                 {
@@ -278,6 +281,7 @@ const reportResolver = {
                             ]);
                             const expenseSelectedDate = findExpenseSelectedDate.length > 0 ? findExpenseSelectedDate[0].total_debit - findExpenseSelectedDate[0].total_credit : 0;
                             const findExpenseYearToDate = await generalJournal_1.default.aggregate([
+                                { $match: { isDeleted: false } },
                                 { $match: selected_date },
                                 { $unwind: "$journal_entries" },
                                 {
@@ -390,6 +394,7 @@ const reportResolver = {
                         ]);
                         const findSummmary = Promise.all(findAccount.map(async (element) => {
                             const findSelectedDateBalance = await generalJournal_1.default.aggregate([
+                                { $match: { isDeleted: false } },
                                 { $unwind: "$journal_entries" },
                                 { $match: selected_date },
                                 { $match: { "journal_entries.chart_account_id": element._id } },
@@ -406,6 +411,7 @@ const reportResolver = {
                                 selectedDateBalance = findSelectedDateBalance.length > 0 ? findSelectedDateBalance[0].total_debit - findSelectedDateBalance[0].total_credit : 0;
                             }
                             const findYearToDateBalance = await generalJournal_1.default.aggregate([
+                                { $match: { isDeleted: false } },
                                 { $unwind: "$journal_entries" },
                                 { $match: year_to_date },
                                 { $match: { "journal_entries.chart_account_id": element._id } },
@@ -522,6 +528,7 @@ const reportResolver = {
                 }));
                 const ChartAccountWithBalance = await findBalanceOfChartAccount;
                 const allJournalEntries = await generalJournal_1.default.aggregate([
+                    { $match: { isDeleted: false } },
                     { $match: selected_date },
                     { $unwind: "$journal_entries" },
                     {
@@ -593,6 +600,7 @@ const reportResolver = {
                     }
                 });
                 const totalBalanceGeneralLedger = await generalJournal_1.default.aggregate([
+                    { $match: { isDeleted: false } },
                     { $match: selected_date },
                     { $unwind: "$journal_entries" },
                     {

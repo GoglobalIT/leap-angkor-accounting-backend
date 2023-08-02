@@ -16,7 +16,7 @@ const generalJournalResolver = {
     getLastJournalNumber: async(_root: undefined, {}) => {
       try {
         let journalNumber = 1
-        const getLastJournal = await GeneralJournal.findOne({}).sort({createdAt: -1}).limit(1)
+        const getLastJournal = await GeneralJournal.findOne({isDeleted: false}).sort({createdAt: -1}).limit(1)
         if(getLastJournal){
           journalNumber = getLastJournal.journal_number + 1
         }
@@ -51,7 +51,8 @@ const generalJournalResolver = {
               { memo: { $regex: keyword, $options: "i" } },
             ]
           },
-          queryByDate
+          queryByDate,
+          {isDeleted: false}
         ]}
 
         const getData = await GeneralJournal.paginate(query, options);
@@ -67,7 +68,7 @@ const generalJournalResolver = {
     createJournal: async (_root: undefined, { input }: { input: iDepartment }) => {
       try {
         let journalNumber = 1
-        const getLastJournal = await GeneralJournal.findOne({}).sort({createdAt: -1}).limit(1)
+        const getLastJournal = await GeneralJournal.findOne({isDeleted: false}).sort({createdAt: -1}).limit(1)
         if(getLastJournal){
           journalNumber = getLastJournal.journal_number + 1
         }
@@ -115,8 +116,8 @@ const generalJournalResolver = {
     },
     deleteJournal: async (_root: undefined, { journal_id }: { journal_id: String },) => {
       try {
-        const isDeleted = await GeneralJournal.findByIdAndDelete(journal_id);
-        if (!isDeleted) {
+        const isDeletedUpdate = await GeneralJournal.findByIdAndUpdate(journal_id, {isDeleted: true});
+        if (!isDeletedUpdate) {
           return {
             isSuccess: false,
             message: "Delete JournalUnsuccessful !"

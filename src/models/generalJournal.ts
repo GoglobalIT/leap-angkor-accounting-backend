@@ -21,6 +21,8 @@ const generalJournalSchema = new Schema<any>({
     ],
     created_by: {type: mongoose.Types.ObjectId, ref: "User", autopopulate: true},
     memo: {type: String, default: ""},
+    isClosedRepord: {type: Boolean, default: false},
+    isDeleted: {type: Boolean, default: false}
 }, {timestamps: true})
 generalJournalSchema.plugin(paginate)
 generalJournalSchema.plugin(mongooseAutoPopulate)

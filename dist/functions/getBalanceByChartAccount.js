@@ -34,6 +34,7 @@ const getBalanceChartAccount = async (chart_account_id, start_date, end_date) =>
             transaction_date_match = { record_date: { $gte: startDate, $lte: endDate } };
         }
         const findBalanceDraft = await generalJournal_1.default.aggregate([
+            { $match: { isDeleted: false } },
             { $unwind: "$journal_entries" },
             { $match: transaction_date_match },
             { $match: { "journal_entries.chart_account_id": { $in: all_accounts_related } } },

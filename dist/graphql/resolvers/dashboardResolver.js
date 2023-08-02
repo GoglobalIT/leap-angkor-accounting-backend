@@ -20,6 +20,7 @@ const dashboardResolver = {
                 if (department_id === "64a52c65ad409eb75c87d8e1") {
                     let summaryAllDepartment = async (accountType, increase) => {
                         const findSelectedDateBalance = await generalJournal_1.default.aggregate([
+                            { $match: { isDeleted: false } },
                             { $match: selected_date },
                             { $unwind: "$journal_entries" },
                             {
@@ -62,6 +63,7 @@ const dashboardResolver = {
                 else {
                     let summmaryByDepartment = async (accountType, increase) => {
                         const findSelectedDateBalance = await generalJournal_1.default.aggregate([
+                            { $match: { isDeleted: false } },
                             { $unwind: "$journal_entries" },
                             { $match: selected_date },
                             {
@@ -151,6 +153,7 @@ const dashboardResolver = {
                 const findARandAp = Promise.all(monthInYear.map(async (element, index) => {
                     const monthInYearString = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                     const findAR = await generalJournal_1.default.aggregate([
+                        { $match: { isDeleted: false } },
                         { $addFields: { year: { $year: { date: "$record_date", timezone: "Asia/Bangkok" } } } },
                         { $addFields: { month: { $month: { date: "$record_date", timezone: "Asia/Bangkok" } } } },
                         { $match: { year: currentYear } },
@@ -178,6 +181,7 @@ const dashboardResolver = {
                     const ARData = await findAR;
                     const totalBalanceAR = ARData.length === 1 ? ARData[0].total_balance : 0;
                     const findAP = await generalJournal_1.default.aggregate([
+                        { $match: { isDeleted: false } },
                         { $addFields: { year: { $year: { date: "$record_date", timezone: "Asia/Bangkok" } } } },
                         { $addFields: { month: { $month: { date: "$record_date", timezone: "Asia/Bangkok" } } } },
                         { $match: { year: currentYear } },
@@ -238,6 +242,7 @@ const dashboardResolver = {
                     ]);
                     const findSummmary = Promise.all(findAccount.map(async (element) => {
                         const findSelectedDateBalance = await generalJournal_1.default.aggregate([
+                            { $match: { isDeleted: false } },
                             { $unwind: "$journal_entries" },
                             { $match: selected_date },
                             { $match: { "journal_entries.chart_account_id": element._id } },
@@ -304,6 +309,7 @@ const dashboardResolver = {
                     ]);
                     const findSummmary = Promise.all(findAccount.map(async (element) => {
                         const findSelectedDateBalance = await generalJournal_1.default.aggregate([
+                            { $match: { isDeleted: false } },
                             { $unwind: "$journal_entries" },
                             { $match: selected_date },
                             { $match: { "journal_entries.chart_account_id": element._id } },
@@ -370,6 +376,7 @@ const dashboardResolver = {
                     ]);
                     const findSummmary = Promise.all(findAccount.map(async (element) => {
                         const findSelectedDateBalance = await generalJournal_1.default.aggregate([
+                            { $match: { isDeleted: false } },
                             { $unwind: "$journal_entries" },
                             { $match: selected_date },
                             { $match: { "journal_entries.chart_account_id": element._id } },

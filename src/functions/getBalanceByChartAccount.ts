@@ -43,6 +43,7 @@ const getBalanceChartAccount = async (chart_account_id: String, start_date: Stri
         }
 
         const findBalanceDraft = await GeneralJournal.aggregate([
+          { $match: {isDeleted: false}},
           {$unwind: "$journal_entries"},
           {$match: transaction_date_match},
           {$match: {"journal_entries.chart_account_id": {$in: all_accounts_related}}},
