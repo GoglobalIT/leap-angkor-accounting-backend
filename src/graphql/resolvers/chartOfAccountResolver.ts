@@ -1,7 +1,7 @@
 import { iChartOfAccount } from "../../interface/iChartOfAccount";
 import ChartOfAccount from "../../models/chartOfAccount";
 import { paginationLabel } from "../../functions/paginationLabel";
-import {accountType} from "../../functions/type";
+import {accountType} from "../../functions/accountType";
 import GeneralJournal from "../../models/generalJournal";
 import getBalanceChartAccount from "../../functions/getBalanceByChartAccount";
 

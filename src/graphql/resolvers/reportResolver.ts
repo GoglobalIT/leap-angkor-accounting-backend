@@ -7,21 +7,24 @@ import mongoose from 'mongoose';
 import moment from 'moment';
 import getBalanceChartAccount from '../../functions/getBalanceByChartAccount';
 import { iChartOfAccount } from '../../interface/iChartOfAccount'
-
+import {request, gql } from 'graphql-request';
 
 const reportResolver = {
     Query: {
         balanceSheetReport: async (_root: undefined, { year, month }: { year: string, month: string }) => {
             try {
-   
+                
                 const lastDayCurrMonth = new Date(Number(year), Number(month), 0).getDate();
-                const curr_month_from_date = `${year}-${month}-01`
+                const curr_month_from_date = `${year}-01-01`
                 const curr_month_to_date = `${year}-${month}-${lastDayCurrMonth}`
+
+                const last_month_to_date = moment(curr_month_to_date).subtract(1, 'months').format("YYYY-MM-DD")
+                const last_month_from_date = moment(last_month_to_date).format("YYYY-01-01")
             
                 const balanceSheet = async (accountType: Array<string>, start_date: string, end_date: string) => {
 
-                    const last_month_to_date = moment(start_date).subtract(1, 'days').format("YYYY-MM-DD")
-                    const last_month_from_date = moment(last_month_to_date).format("YYYY-MM-01")
+                    // const last_month_to_date = moment(end_date).subtract(1, 'months').format("YYYY-MM-DD")
+                    // const last_month_from_date = moment(last_month_to_date).format("YYYY-01-01")
 
                     //@Parent Account, we need it becasue it already have tree data form
                     const getParentsChartAccount = await ChartOfAccount.find({
@@ -109,8 +112,65 @@ const reportResolver = {
                 const getBalanceSheetAsset = await balanceSheet(['Cash on hand', 'Cash in bank', 'Account Receivable', 'Inventory', 'Fixed Assets'], curr_month_from_date, curr_month_to_date)
                 const getBalanceSheetLiability = await balanceSheet(['Account Payable'], curr_month_from_date, curr_month_to_date)
                 const getBalanceSheetEquity = await balanceSheet(['Revenues', 'Cost', 'Expenditures', 'Capitals'], curr_month_from_date, curr_month_to_date)
+            
+                //@===================== find Retained Earning from income statment report ===================
+                // const endpoint = 'http://localhost:4400/graphql';
+                const endpoint = process.env.OWN_ENDPOINT;
+                const schema = gql`
+                query IncomeStatementReport($departmentId: String, $fromDate: Date, $toDate: Date, $form: String) {
+                    incomeStatementReport(department_id: $departmentId, fromDate: $fromDate, toDate: $toDate, form: $form) {
+                        netIncome {
+                        selectedDateBalance
+                        }
+                    }
+                }`;
+                const variablesCurrMonth = {
+                    departmentId: "64a52c65ad409eb75c87d8e1", //All department Id
+                    fromDate: curr_month_from_date,
+                    toDate: curr_month_to_date,
+                    form: "1"  
+                }
+                const currMonthNetIncome: any = await request({
+                    url: endpoint,
+                    document: schema,
+                    variables: variablesCurrMonth,
+                    // requestHeaders,
+                  })
+                const variablesLastMonth = {
+                    departmentId: "64a52c65ad409eb75c87d8e1", //All department Id
+                    fromDate: last_month_from_date,
+                    toDate: last_month_to_date,
+                    form: "1"  
+                }
+                const lastMonthNetIncome: any = await request({
+                    url: endpoint,
+                    document: schema,
+                    variables: variablesLastMonth,
+                    // requestHeaders,
+                })
+                if(currMonthNetIncome && lastMonthNetIncome){
+                    getBalanceSheetEquity.push({
+                        account_name: "Retained Earning",
+                        total_balance: {
+                            current_month_balance: currMonthNetIncome.incomeStatementReport.netIncome.selectedDateBalance,
+                            last_month_balance: lastMonthNetIncome.incomeStatementReport.netIncome.selectedDateBalance
+                        },
+                        sub_account:[
+                            {
+                                account_name: "Retained Earning",
+                                total_balance: {
+                                    current_month_balance: currMonthNetIncome.incomeStatementReport.netIncome.selectedDateBalance,
+                                    last_month_balance: lastMonthNetIncome.incomeStatementReport.netIncome.selectedDateBalance
+                                },
+                                sub_account:[]
+                            }
+                        ]
+                    })
+                }
+                //============================ Retained Earning ==========================
+     
                 
-
+                //@Final Prepare Data
                 let balanceSheetData = {
                     asset: getBalanceSheetAsset,
                     total_asset: {

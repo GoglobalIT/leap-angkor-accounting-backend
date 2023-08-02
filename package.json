@@ -23,6 +23,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "graphql-request": "^6.1.0",
     "graphql-subscriptions": "^2.0.0",
     "graphql-ws": "^5.12.0",
     "moment": "^2.29.4",

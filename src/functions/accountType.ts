@@ -10,7 +10,6 @@ export const accountType = [
     'Expenditures', // Exprense -> Equity (Debit)
     'Account Payable', // Liability (Credit)
     'Capitals', //Equity capital -> Equity (Credit)      
-    'Profits' // ?
 ]
 
 

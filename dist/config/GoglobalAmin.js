@@ -128,7 +128,6 @@ class Goglobalauth {
         }
     }
     async updateUserInfo(user_id, email, firstName, lastName, role) {
-        console.log(user_id, email, firstName, lastName, role, "inputAuth");
         try {
             if (!this.verify) {
                 return {
