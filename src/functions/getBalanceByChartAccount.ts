@@ -6,7 +6,6 @@ const getBalanceChartAccount = async (chart_account_id: String, start_date: Stri
     
         const chartAccountInfo = await ChartOfAccount.findById(chart_account_id)
     
-        
         let total_account_balance = {
           _id: chartAccountInfo._id,
           account_name: chartAccountInfo.account_name,
@@ -15,8 +14,6 @@ const getBalanceChartAccount = async (chart_account_id: String, start_date: Stri
           total_credit: 0,
           total_balance: 0,
         }
-
-        // console.log(chartAccountInfo, "chartAccountInfo")
 
         // ***RECURSIVE Function : for get all related chart account to find total Credit, Debit, and Balance of each parent account */
         const getAllSub = (chartAccountInfo:any, arry:any)=>{
