@@ -823,6 +823,8 @@ const reportResolver = {
 
             }
         },
+    },
+    Mutation: {
         closeReport: async(_root: undefined, {dateTime}:{dateTime: string})=>{
             try {
             

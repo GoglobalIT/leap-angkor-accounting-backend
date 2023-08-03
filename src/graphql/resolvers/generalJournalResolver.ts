@@ -67,6 +67,7 @@ const generalJournalResolver = {
   Mutation: {
     createJournal: async (_root: undefined, { input }: { input: iDepartment }) => {
       try {
+    
         let journalNumber = 1
         const getLastJournal = await GeneralJournal.findOne({isDeleted: false}).sort({createdAt: -1}).limit(1)
         if(getLastJournal){
@@ -95,7 +96,7 @@ const generalJournalResolver = {
     },
     updateJournal: async (_root: undefined, { journal_id, input }: { journal_id: String, input: iDepartment }) => {
       try {
-
+     
         const isUpdated = await GeneralJournal.findByIdAndUpdate(journal_id, input);
         if (!isUpdated) {
           return {

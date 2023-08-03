@@ -11,6 +11,7 @@ const generalJournalType = `#graphql
     journal_entries: [JournalEntries]
     created_by: User
     memo: String
+    isClosedRepord: Boolean
     createdAt: Date
     updatedAt: Date
   }

@@ -625,6 +625,8 @@ const reportResolver = {
             catch (error) {
             }
         },
+    },
+    Mutation: {
         closeReport: async (_root, { dateTime }) => {
             try {
                 const closeDate = new Date(dateTime);
