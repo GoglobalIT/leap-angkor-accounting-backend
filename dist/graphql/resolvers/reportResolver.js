@@ -629,7 +629,7 @@ const reportResolver = {
     Mutation: {
         closeReport: async (_root, { dateTime }) => {
             try {
-                const closeDate = new Date(dateTime);
+                const closeDate = new Date(`${dateTime}T16:59:59.999Z`);
                 const updateJournal = await generalJournal_1.default.updateMany({ $and: [
                         { createdAt: { $lte: closeDate } },
                         { isClosedRepord: false },

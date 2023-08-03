@@ -828,7 +828,7 @@ const reportResolver = {
         closeReport: async(_root: undefined, {dateTime}:{dateTime: string})=>{
             try {
             
-                const closeDate = new Date(dateTime)
+                const closeDate = new Date(`${dateTime}T16:59:59.999Z`)
  
                 const updateJournal = await GeneralJournal.updateMany(
                     {$and:[
