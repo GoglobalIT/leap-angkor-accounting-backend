@@ -3,6 +3,7 @@ import express from 'express';
 
 const AuchCheck = async (req: express.Request) => {
     const token = req.headers.authorization
+    // console.log(token, "graphQLClient")
     const verify = await AuthAdmin.verifyToken(token);
     if (verify.status) {
         return verify

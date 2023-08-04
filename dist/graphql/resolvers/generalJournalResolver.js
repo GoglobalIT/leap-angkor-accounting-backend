@@ -5,10 +5,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const generalJournal_1 = __importDefault(require("../../models/generalJournal"));
 const paginationLabel_1 = require("../../functions/paginationLabel");
+const AuchCheck_1 = __importDefault(require("../../config/AuchCheck"));
 const generalJournalResolver = {
     Query: {
-        getJournalById: async (_root, { journal_id }) => {
+        getJournalById: async (_root, { journal_id }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const getById = await generalJournal_1.default.findById(journal_id);
                 return getById;
             }
@@ -16,8 +21,12 @@ const generalJournalResolver = {
                 console.log(error.message);
             }
         },
-        getLastJournalNumber: async (_root, {}) => {
+        getLastJournalNumber: async (_root, {}, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 let journalNumber = 1;
                 const getLastJournal = await generalJournal_1.default.findOne({ isDeleted: false }).sort({ createdAt: -1 }).limit(1);
                 if (getLastJournal) {
@@ -28,8 +37,12 @@ const generalJournalResolver = {
             catch (error) {
             }
         },
-        getJournalWithPagination: async (_root, { page, limit, keyword, pagination, fromDate, toDate }) => {
+        getJournalWithPagination: async (_root, { page, limit, keyword, pagination, fromDate, toDate }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const options = {
                     page: page || 1,
                     limit: limit || 10,
@@ -62,8 +75,12 @@ const generalJournalResolver = {
         }
     },
     Mutation: {
-        createJournal: async (_root, { input }) => {
+        createJournal: async (_root, { input }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 let journalNumber = 1;
                 const getLastJournal = await generalJournal_1.default.findOne({ isDeleted: false }).sort({ createdAt: -1 }).limit(1);
                 if (getLastJournal) {
@@ -91,8 +108,12 @@ const generalJournalResolver = {
                 };
             }
         },
-        updateJournal: async (_root, { journal_id, input }) => {
+        updateJournal: async (_root, { journal_id, input }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const isUpdated = await generalJournal_1.default.findByIdAndUpdate(journal_id, input);
                 if (!isUpdated) {
                     return {
@@ -112,8 +133,12 @@ const generalJournalResolver = {
                 };
             }
         },
-        deleteJournal: async (_root, { journal_id }) => {
+        deleteJournal: async (_root, { journal_id }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const isDeletedUpdate = await generalJournal_1.default.findByIdAndUpdate(journal_id, { isDeleted: true });
                 if (!isDeletedUpdate) {
                     return {

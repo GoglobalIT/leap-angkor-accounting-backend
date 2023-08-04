@@ -7,10 +7,15 @@ const generalJournal_1 = __importDefault(require("../../models/generalJournal"))
 const chartOfAccount_1 = __importDefault(require("../../models/chartOfAccount"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const getBalanceByChartAccount_1 = __importDefault(require("../../functions/getBalanceByChartAccount"));
+const AuchCheck_1 = __importDefault(require("../../config/AuchCheck"));
 const dashboardResolver = {
     Query: {
-        getSummaryIncomeStatment: async (_root, { department_id, fromDate, toDate }) => {
+        getSummaryIncomeStatment: async (_root, { department_id, fromDate, toDate }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 let selected_date = {};
                 if (fromDate && toDate) {
                     const startDate = new Date(`${fromDate}T00:00:00.000Z`);
@@ -108,8 +113,12 @@ const dashboardResolver = {
             catch (error) {
             }
         },
-        getCash: async (_root, { department_id, fromDate, toDate }) => {
+        getCash: async (_root, { department_id, fromDate, toDate }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const getCashOnHand = await chartOfAccount_1.default.find({
                     $and: [
                         { account_type: 'Cash on hand' },
@@ -146,8 +155,12 @@ const dashboardResolver = {
             catch (error) {
             }
         },
-        getARandAP: async (_root, { department_id, fromDate, toDate }) => {
+        getARandAP: async (_root, { department_id, fromDate, toDate }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const currentYear = fromDate ? Number((fromDate.split("-", 1))[0]) : new Date().getFullYear();
                 const monthInYear = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
                 const findARandAp = Promise.all(monthInYear.map(async (element, index) => {
@@ -220,8 +233,12 @@ const dashboardResolver = {
             catch {
             }
         },
-        getExpenseByDepartment: async (_root, { department_id, fromDate, toDate }) => {
+        getExpenseByDepartment: async (_root, { department_id, fromDate, toDate }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 let selected_date = {};
                 if (fromDate && toDate) {
                     const startDate = new Date(`${fromDate}T00:00:00.000Z`);
@@ -287,8 +304,12 @@ const dashboardResolver = {
             catch (error) {
             }
         },
-        getRevenueByDepartment: async (_root, { department_id, fromDate, toDate }) => {
+        getRevenueByDepartment: async (_root, { department_id, fromDate, toDate }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 let selected_date = {};
                 if (fromDate && toDate) {
                     const startDate = new Date(`${fromDate}T00:00:00.000Z`);
@@ -354,8 +375,12 @@ const dashboardResolver = {
             catch (error) {
             }
         },
-        getCostOfSaleByDepartment: async (_root, { department_id, fromDate, toDate }) => {
+        getCostOfSaleByDepartment: async (_root, { department_id, fromDate, toDate }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 let selected_date = {};
                 if (fromDate && toDate) {
                     const startDate = new Date(`${fromDate}T00:00:00.000Z`);

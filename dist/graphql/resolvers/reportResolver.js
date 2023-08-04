@@ -10,10 +10,15 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const moment_1 = __importDefault(require("moment"));
 const getBalanceByChartAccount_1 = __importDefault(require("../../functions/getBalanceByChartAccount"));
 const graphql_request_1 = require("graphql-request");
+const AuchCheck_1 = __importDefault(require("../../config/AuchCheck"));
 const reportResolver = {
     Query: {
-        balanceSheetReport: async (_root, { year, month }) => {
+        balanceSheetReport: async (_root, { year, month }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const lastDayCurrMonth = new Date(Number(year), Number(month), 0).getDate();
                 const curr_month_from_date = `${year}-01-01`;
                 const curr_month_to_date = `${year}-${month}-${lastDayCurrMonth}`;
@@ -88,7 +93,12 @@ const reportResolver = {
                 const getBalanceSheetLiability = await balanceSheet(['Account Payable'], curr_month_from_date, curr_month_to_date);
                 const getBalanceSheetEquity = await balanceSheet(['Revenues', 'Cost', 'Expenditures', 'Capitals'], curr_month_from_date, curr_month_to_date);
                 const endpoint = process.env.OWN_ENDPOINT;
-                const schema = (0, graphql_request_1.gql) `
+                let graphQLClient = new graphql_request_1.GraphQLClient(endpoint, {
+                    headers: {
+                        authorization: req.headers.authorization,
+                    },
+                });
+                const query = (0, graphql_request_1.gql) `
                 query IncomeStatementReport($departmentId: String, $fromDate: Date, $toDate: Date, $form: String) {
                     incomeStatementReport(department_id: $departmentId, fromDate: $fromDate, toDate: $toDate, form: $form) {
                         netIncome {
@@ -102,9 +112,8 @@ const reportResolver = {
                     toDate: curr_month_to_date,
                     form: "1"
                 };
-                const currMonthNetIncome = await (0, graphql_request_1.request)({
-                    url: endpoint,
-                    document: schema,
+                const currMonthNetIncome = await graphQLClient.request({
+                    document: query,
                     variables: variablesCurrMonth,
                 });
                 const variablesLastMonth = {
@@ -113,9 +122,8 @@ const reportResolver = {
                     toDate: last_month_to_date,
                     form: "1"
                 };
-                const lastMonthNetIncome = await (0, graphql_request_1.request)({
-                    url: endpoint,
-                    document: schema,
+                const lastMonthNetIncome = await graphQLClient.request({
+                    document: query,
                     variables: variablesLastMonth,
                 });
                 if (currMonthNetIncome && lastMonthNetIncome) {
@@ -165,8 +173,12 @@ const reportResolver = {
             catch (error) {
             }
         },
-        incomeStatementReport: async (_root, { department_id, fromDate, toDate, form }) => {
+        incomeStatementReport: async (_root, { department_id, fromDate, toDate, form }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 let selected_date = {};
                 let year_to_date = {};
                 if (fromDate && toDate) {
@@ -497,8 +509,12 @@ const reportResolver = {
             catch (error) {
             }
         },
-        generalLedgerReport: async (_root, { fromDate, toDate }) => {
+        generalLedgerReport: async (_root, { fromDate, toDate }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 let selected_date = {};
                 if (fromDate && toDate) {
                     const startDate = new Date(`${fromDate}T00:00:00.000Z`);
@@ -627,8 +643,12 @@ const reportResolver = {
         },
     },
     Mutation: {
-        closeReport: async (_root, { dateTime }) => {
+        closeReport: async (_root, { dateTime }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const closeDate = new Date(`${dateTime}T16:59:59.999Z`);
                 const updateJournal = await generalJournal_1.default.updateMany({ $and: [
                         { createdAt: { $lte: closeDate } },

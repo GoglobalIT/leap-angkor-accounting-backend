@@ -5,12 +5,18 @@ import ChartOfAccount from '../../models/chartOfAccount';
 import mongoose from 'mongoose';
 import getBalanceChartAccount from '../../functions/getBalanceByChartAccount';
 import Department from '../../models/department';
+import AuchCheck from '../../config/AuchCheck'
 
 
 const dashboardResolver = {
   Query: {
-    getSummaryIncomeStatment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: string, toDate: string }) => {
+    getSummaryIncomeStatment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: string, toDate: string }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         let selected_date = {}
 
         if (fromDate && toDate) {
@@ -122,9 +128,12 @@ const dashboardResolver = {
 
       }
     },
-    getCash: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: String, fromDate: String, toDate: String }) => {
+    getCash: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: String, fromDate: String, toDate: String }, {req}:{req: any}) => {
       try {
-
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
         // if(department_id === '64a52c65ad409eb75c87d8e1'){
         const getCashOnHand = await ChartOfAccount.find({
           $and: [
@@ -171,8 +180,13 @@ const dashboardResolver = {
       }
     },
     //@Get Account Recievable and Account Payable Total Balance By Month and Year
-    getARandAP: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: String, fromDate: String, toDate: String }) => {
+    getARandAP: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: String, fromDate: String, toDate: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const currentYear = fromDate ? Number((fromDate.split("-", 1))[0]) : new Date().getFullYear()
         const monthInYear = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
@@ -255,8 +269,13 @@ const dashboardResolver = {
 
       }
     },
-    getExpenseByDepartment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: String, toDate: String }) => {
+    getExpenseByDepartment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: String, toDate: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         let selected_date = {}
 
         if (fromDate && toDate) {
@@ -342,8 +361,13 @@ const dashboardResolver = {
 
       }
     },
-    getRevenueByDepartment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: String, toDate: String }) => {
+    getRevenueByDepartment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: String, toDate: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         let selected_date = {}
 
         if (fromDate && toDate) {
@@ -425,8 +449,13 @@ const dashboardResolver = {
       }
     },
 
-    getCostOfSaleByDepartment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: String, toDate: String }) => {
+    getCostOfSaleByDepartment: async (_root: undefined, { department_id, fromDate, toDate }: { department_id: string, fromDate: String, toDate: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+        
         let selected_date = {}
 
         if (fromDate && toDate) {

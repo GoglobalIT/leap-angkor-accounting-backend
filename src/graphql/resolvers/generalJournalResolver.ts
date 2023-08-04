@@ -1,20 +1,31 @@
 import { iDepartment } from "../../interface/iDepartment";
 import GeneralJournal from "../../models/generalJournal";
 import {paginationLabel} from "../../functions/paginationLabel";
+import AuchCheck from '../../config/AuchCheck'
 
 
 const generalJournalResolver = {
   Query: {
-    getJournalById: async (_root: undefined, {journal_id}:{journal_id: String}) => {
+    getJournalById: async (_root: undefined, {journal_id}:{journal_id: String},{req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const getById = await GeneralJournal.findById(journal_id)
         return getById
       } catch (error) {
         console.log(error.message)
       }
     },
-    getLastJournalNumber: async(_root: undefined, {}) => {
+    getLastJournalNumber: async(_root: undefined, {},{req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         let journalNumber = 1
         const getLastJournal = await GeneralJournal.findOne({isDeleted: false}).sort({createdAt: -1}).limit(1)
         if(getLastJournal){
@@ -25,9 +36,13 @@ const generalJournalResolver = {
         
       }
     },
-    getJournalWithPagination: async (_root: undefined, {page, limit, keyword, pagination, fromDate, toDate}: {page: number, limit: number, keyword: string, pagination: boolean, fromDate: String, toDate: String})=>{
+    getJournalWithPagination: async (_root: undefined, {page, limit, keyword, pagination, fromDate, toDate}: {page: number, limit: number, keyword: string, pagination: boolean, fromDate: String, toDate: String}, {req}:{req: any})=>{
       try {
-        
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const options = {
           page: page || 1,
           limit: limit || 10,
@@ -65,9 +80,13 @@ const generalJournalResolver = {
     }
   },
   Mutation: {
-    createJournal: async (_root: undefined, { input }: { input: iDepartment }) => {
+    createJournal: async (_root: undefined, { input }: { input: iDepartment }, {req}:{req: any}) => {
       try {
-    
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         let journalNumber = 1
         const getLastJournal = await GeneralJournal.findOne({isDeleted: false}).sort({createdAt: -1}).limit(1)
         if(getLastJournal){
@@ -94,9 +113,13 @@ const generalJournalResolver = {
         }
       }
     },
-    updateJournal: async (_root: undefined, { journal_id, input }: { journal_id: String, input: iDepartment }) => {
+    updateJournal: async (_root: undefined, { journal_id, input }: { journal_id: String, input: iDepartment }, {req}:{req: any}) => {
       try {
-     
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const isUpdated = await GeneralJournal.findByIdAndUpdate(journal_id, input);
         if (!isUpdated) {
           return {
@@ -115,8 +138,13 @@ const generalJournalResolver = {
         }
       }
     },
-    deleteJournal: async (_root: undefined, { journal_id }: { journal_id: String },) => {
+    deleteJournal: async (_root: undefined, { journal_id }: { journal_id: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+        
         const isDeletedUpdate = await GeneralJournal.findByIdAndUpdate(journal_id, {isDeleted: true});
         if (!isDeletedUpdate) {
           return {

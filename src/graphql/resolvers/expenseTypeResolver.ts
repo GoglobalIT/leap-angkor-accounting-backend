@@ -2,20 +2,30 @@ import { iExpenseType } from "../../interface/iExpenseType";
 import ExpenseType from "../../models/expenseType";
 import {paginationLabel} from "../../functions/paginationLabel";
 import ChartOfAccount from "../../models/chartOfAccount";
+import AuchCheck from '../../config/AuchCheck'
 
 const expenseTypeResolver = {
   Query: {
-    getExpenseTypeById: async (_root: undefined, {expense_type_id}:{expense_type_id: String}) => {
+    getExpenseTypeById: async (_root: undefined, {expense_type_id}:{expense_type_id: String}, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const getById = await ExpenseType.findById(expense_type_id)
         return getById
       } catch (error) {
         console.log(error.message)
       }
     },
-    getExpenseTypePagination: async (_root: undefined, {page, limit, keyword, pagination}: {page: number, limit: number, keyword: string, pagination: boolean})=>{
+    getExpenseTypePagination: async (_root: undefined, {page, limit, keyword, pagination}: {page: number, limit: number, keyword: string, pagination: boolean}, {req}:{req: any})=>{
       try {
-        
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const options = {
           page: page || 1,
           limit: limit || 10,
@@ -41,8 +51,12 @@ const expenseTypeResolver = {
     }
   },
   Mutation: {
-    createExpenseType: async (_root: undefined, { input }: { input: iExpenseType }) => {
+    createExpenseType: async (_root: undefined, { input }: { input: iExpenseType }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
         // console.log(input)
         const isExisting = await ExpenseType.findOne({$or:[
             {expense_name: input.expense_name},   
@@ -72,8 +86,13 @@ const expenseTypeResolver = {
         }
       }
     },
-    updateExpenseType: async (_root: undefined, { expense_type_id, input }: { expense_type_id: String, input: iExpenseType }) => {
+    updateExpenseType: async (_root: undefined, { expense_type_id, input }: { expense_type_id: String, input: iExpenseType }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const isExisting = await ExpenseType.findOne({$and:[
           {expense_name: input.expense_name},
           {_id: {$ne: expense_type_id}}
@@ -102,8 +121,13 @@ const expenseTypeResolver = {
         }
       }
     },
-    deleteExpenseType: async (_root: undefined, { expense_type_id }: { expense_type_id: String },) => {
+    deleteExpenseType: async (_root: undefined, { expense_type_id }: { expense_type_id: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+        
         const isInUsed = await ChartOfAccount.findOne({expense_type_id: expense_type_id})
         if(isInUsed){
           return {

@@ -7,10 +7,15 @@ const chartOfAccount_1 = __importDefault(require("../../models/chartOfAccount"))
 const paginationLabel_1 = require("../../functions/paginationLabel");
 const accountType_1 = require("../../functions/accountType");
 const getBalanceByChartAccount_1 = __importDefault(require("../../functions/getBalanceByChartAccount"));
+const AuchCheck_1 = __importDefault(require("../../config/AuchCheck"));
 const departmentResolver = {
     Query: {
-        getChartOfAccountById: async (_root, { chart_account_id }) => {
+        getChartOfAccountById: async (_root, { chart_account_id }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const getById = await chartOfAccount_1.default.findById(chart_account_id);
                 return getById;
             }
@@ -18,8 +23,12 @@ const departmentResolver = {
                 console.log(error.message);
             }
         },
-        getChartOfAccountWithPagination: async (_root, { page, limit, keyword, pagination, department_id, account_type }) => {
+        getChartOfAccountWithPagination: async (_root, { page, limit, keyword, pagination, department_id, account_type }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const options = {
                     page: page || 1,
                     limit: limit || 10,
@@ -49,8 +58,12 @@ const departmentResolver = {
                 console.log(error);
             }
         },
-        getChartOfAccountList: async (_root, { department_id, account_type }) => {
+        getChartOfAccountList: async (_root, { department_id, account_type }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const departmentQuery = department_id.length > 0 ? { department_id: { $in: department_id } } : {};
                 const accountTypeQuery = account_type.length > 0 ? { account_type: { $in: account_type } } : {};
                 const getChartOfAccountList = await chartOfAccount_1.default.find({ $and: [
@@ -62,8 +75,12 @@ const departmentResolver = {
             catch (error) {
             }
         },
-        getBalanceByChartAccountId: async (_root, { chart_account_id, start_date, end_date }) => {
+        getBalanceByChartAccountId: async (_root, { chart_account_id, start_date, end_date }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const getBalance = await (0, getBalanceByChartAccount_1.default)(chart_account_id, start_date, end_date);
                 return getBalance;
             }
@@ -75,8 +92,12 @@ const departmentResolver = {
         }
     },
     Mutation: {
-        createChartOfAccount: async (_root, { input }) => {
+        createChartOfAccount: async (_root, { input }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 if (input.parents_account === null) {
                     const isCreated = await new chartOfAccount_1.default({
                         ...input,
@@ -125,8 +146,12 @@ const departmentResolver = {
                 };
             }
         },
-        updateChartOfAccount: async (_root, { chart_account_id, input }) => {
+        updateChartOfAccount: async (_root, { chart_account_id, input }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const isUpdated = await chartOfAccount_1.default.findByIdAndUpdate(chart_account_id, input);
                 if (!isUpdated) {
                     return {
@@ -146,8 +171,12 @@ const departmentResolver = {
                 };
             }
         },
-        deleteChartOfAccount: async (_root, { chart_account_id }) => {
+        deleteChartOfAccount: async (_root, { chart_account_id }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const findChartAccount = await chartOfAccount_1.default.findById(chart_account_id);
                 if (!findChartAccount) {
                     return {

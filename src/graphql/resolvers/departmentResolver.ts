@@ -2,21 +2,30 @@ import { iDepartment } from "../../interface/iDepartment";
 import Department from "../../models/department";
 import {paginationLabel} from "../../functions/paginationLabel";
 import User from "../../models/user";
-
+import AuchCheck from '../../config/AuchCheck'
 
 const departmentResolver = {
   Query: {
-    getDepartmentById: async (_root: undefined, {department_id}:{department_id: String}) => {
+    getDepartmentById: async (_root: undefined, {department_id}:{department_id: String}, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const getById = await Department.findById(department_id)
         return getById
       } catch (error) {
         console.log(error.message)
       }
     },
-    getDepartmentWithPagination: async (_root: undefined, {page, limit, keyword, pagination, userId}: {page: number, limit: number, keyword: string, pagination: boolean, userId:string})=>{
+    getDepartmentWithPagination: async (_root: undefined, {page, limit, keyword, pagination, userId}: {page: number, limit: number, keyword: string, pagination: boolean, userId:string}, {req}:{req: any})=>{
       try {
-        
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const options = {
           page: page || 1,
           limit: limit || 10,
@@ -56,9 +65,13 @@ const departmentResolver = {
     }
   },
   Mutation: {
-    createDepartment: async (_root: undefined, { input }: { input: iDepartment }) => {
+    createDepartment: async (_root: undefined, { input }: { input: iDepartment }, {req}:{req: any}) => {
       try {
-        console.log(input)
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const isExisting = await Department.findOne({$or:[
             {department_name: input.department_name},   
         ]})
@@ -87,8 +100,13 @@ const departmentResolver = {
         }
       }
     },
-    updateDepartment: async (_root: undefined, { department_id, input }: { department_id: String, input: iDepartment }) => {
+    updateDepartment: async (_root: undefined, { department_id, input }: { department_id: String, input: iDepartment }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const isExisting = await Department.findOne({$and:[
           {department_name: input.department_name},
           {_id: {$ne: department_id}}
@@ -117,8 +135,13 @@ const departmentResolver = {
         }
       }
     },
-    deleteDepartment: async (_root: undefined, { department_id }: { department_id: String },) => {
+    deleteDepartment: async (_root: undefined, { department_id }: { department_id: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+        
         const departmentCannotDelete = ['64a52c65ad409eb75c87d8e1']
         const findWarning = departmentCannotDelete.find(e => e === department_id)
         if(findWarning){

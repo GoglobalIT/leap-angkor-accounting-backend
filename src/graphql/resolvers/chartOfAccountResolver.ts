@@ -3,21 +3,30 @@ import ChartOfAccount from "../../models/chartOfAccount";
 import { paginationLabel } from "../../functions/paginationLabel";
 import {accountType} from "../../functions/accountType";
 import getBalanceChartAccount from "../../functions/getBalanceByChartAccount";
-
+import AuchCheck from '../../config/AuchCheck'
 
 
 const departmentResolver = {
   Query: {
-    getChartOfAccountById: async (_root: undefined, { chart_account_id }: { chart_account_id: String }) => {
+    getChartOfAccountById: async (_root: undefined, { chart_account_id }: { chart_account_id: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const getById = await ChartOfAccount.findById(chart_account_id)
         return getById
       } catch (error) {
         console.log(error.message)
       }
     },
-    getChartOfAccountWithPagination: async (_root: undefined, { page, limit, keyword, pagination, department_id, account_type }: { page: number, limit: number, keyword: string, pagination: boolean, department_id: any, account_type: string }) => {
+    getChartOfAccountWithPagination: async (_root: undefined, { page, limit, keyword, pagination, department_id, account_type }: { page: number, limit: number, keyword: string, pagination: boolean, department_id: any, account_type: string }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
 
         const options = {
           page: page || 1,
@@ -51,8 +60,13 @@ const departmentResolver = {
         console.log(error)
       }
     },
-    getChartOfAccountList: async(_root: undefined, {department_id, account_type}:{department_id: [String], account_type: [String]})=>{
+    getChartOfAccountList: async(_root: undefined, {department_id, account_type}:{department_id: [String], account_type: [String]}, {req}:{req: any})=>{
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const departmentQuery = department_id.length > 0 ? {department_id: {$in: department_id}} : {} 
         const accountTypeQuery = account_type.length > 0 ? {account_type: {$in: account_type}} : {}
         const getChartOfAccountList = await ChartOfAccount.find({$and:[
@@ -66,8 +80,13 @@ const departmentResolver = {
         
       }
     },
-    getBalanceByChartAccountId: async(_root: undefined, {chart_account_id, start_date, end_date}:{chart_account_id:string, start_date:string, end_date:string})=>{
+    getBalanceByChartAccountId: async(_root: undefined, {chart_account_id, start_date, end_date}:{chart_account_id:string, start_date:string, end_date:string}, {req}:{req: any})=>{
         try {
+          const currentUser = await AuchCheck(req)
+          if (!currentUser.status){
+            return new Error(currentUser.message);
+          }
+
           const getBalance = await getBalanceChartAccount(chart_account_id, start_date, end_date)
           return getBalance
         } catch (error) {
@@ -79,9 +98,13 @@ const departmentResolver = {
     }
   },
   Mutation: {
-    createChartOfAccount: async (_root: undefined, { input }: { input: iChartOfAccount }) => {
+    createChartOfAccount: async (_root: undefined, { input }: { input: iChartOfAccount }, {req}:{req: any}) => {
       try {
-        
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         if (input.parents_account === null) {
           const isCreated = await new ChartOfAccount({
             ...input,
@@ -137,8 +160,13 @@ const departmentResolver = {
         }
       }
     },
-    updateChartOfAccount: async (_root: undefined, { chart_account_id, input }: { chart_account_id: String, input: iChartOfAccount }) => {
+    updateChartOfAccount: async (_root: undefined, { chart_account_id, input }: { chart_account_id: String, input: iChartOfAccount }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const isUpdated = await ChartOfAccount.findByIdAndUpdate(chart_account_id, input);
         if (!isUpdated) {
           return {
@@ -157,8 +185,13 @@ const departmentResolver = {
         }
       }
     },
-    deleteChartOfAccount: async (_root: undefined, { chart_account_id }: { chart_account_id: String },) => {
+    deleteChartOfAccount: async (_root: undefined, { chart_account_id }: { chart_account_id: String }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+        
         const findChartAccount = await ChartOfAccount.findById(chart_account_id)
         if (!findChartAccount) {
           return {

@@ -11,8 +11,12 @@ const AuthAdmin_1 = __importDefault(require("../../config/AuthAdmin"));
 require("../../config/keyService.json");
 const userResolver = {
     Query: {
-        getUserById: async (_root, { _id }) => {
+        getUserById: async (_root, { _id }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const getById = await user_1.default.findById(_id).populate('company');
                 return getById;
             }
@@ -36,8 +40,12 @@ const userResolver = {
                 };
             }
         },
-        getUserWithPagination: async (_root, { page, limit, keyword, pagination }) => {
+        getUserWithPagination: async (_root, { page, limit, keyword, pagination }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const options = {
                     page: page || 1,
                     limit: limit || 10,
@@ -62,8 +70,12 @@ const userResolver = {
         }
     },
     Mutation: {
-        createUser: async (_root, { input }) => {
+        createUser: async (_root, { input }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const isExisting = await user_1.default.findOne({ user_email: input.user_email });
                 if (isExisting) {
                     return {
@@ -100,9 +112,12 @@ const userResolver = {
                 };
             }
         },
-        updateUser: async (_root, { _id, input }) => {
+        updateUser: async (_root, { _id, input }, { req }) => {
             try {
-                console.log(input, "input");
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const isExisting = await user_1.default.findOne({ $and: [
                         { user_email: input.user_email },
                         { _id: { $ne: _id } }
@@ -142,8 +157,12 @@ const userResolver = {
                 };
             }
         },
-        deleteUser: async (_root, { _id }) => {
+        deleteUser: async (_root, { _id }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const isDeleted = await user_1.default.findByIdAndDelete(_id);
                 if (!isDeleted) {
                     return {
@@ -170,8 +189,12 @@ const userResolver = {
                 };
             }
         },
-        assignDepartment: async (_root, { user_id, department_id }) => {
+        assignDepartment: async (_root, { user_id, department_id }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const pushDepartment = await user_1.default.updateOne({ _id: user_id }, { $push: { departments_access: department_id } });
                 if (!pushDepartment) {
                     return {
@@ -187,8 +210,12 @@ const userResolver = {
             catch (error) {
             }
         },
-        deleteAssignedDepartment: async (_root, { user_id, department_id }) => {
+        deleteAssignedDepartment: async (_root, { user_id, department_id }, { req }) => {
             try {
+                const currentUser = await (0, AuchCheck_1.default)(req);
+                if (!currentUser.status) {
+                    return new Error(currentUser.message);
+                }
                 const pullDepartment = await user_1.default.updateOne({ _id: user_id }, { $pull: { departments_access: department_id } });
                 if (!pullDepartment) {
                     return {

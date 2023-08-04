@@ -7,13 +7,18 @@ import mongoose from 'mongoose';
 import moment from 'moment';
 import getBalanceChartAccount from '../../functions/getBalanceByChartAccount';
 import { iChartOfAccount } from '../../interface/iChartOfAccount'
-import {request, gql } from 'graphql-request';
+import { request, gql, GraphQLClient } from 'graphql-request';
+import AuchCheck from '../../config/AuchCheck'
 
 const reportResolver = {
     Query: {
-        balanceSheetReport: async (_root: undefined, { year, month }: { year: string, month: string }) => {
+        balanceSheetReport: async (_root: undefined, { year, month }: { year: string, month: string }, {req}:{req: any}) => {
             try {
-                
+                const currentUser = await AuchCheck(req)
+                if (!currentUser.status){
+                  return new Error(currentUser.message);
+                }
+
                 const lastDayCurrMonth = new Date(Number(year), Number(month), 0).getDate();
                 const curr_month_from_date = `${year}-01-01`
                 const curr_month_to_date = `${year}-${month}-${lastDayCurrMonth}`
@@ -21,7 +26,7 @@ const reportResolver = {
                 const last_month_to_date = moment(curr_month_to_date).subtract(1, 'months').format("YYYY-MM-DD")
                 const last_month_from_date = moment(last_month_to_date).format("YYYY-01-01")
 
-                //============================== Test Another Style ====================================
+                //================== ករណី Sub Account 2 ជាន់ (ការសរសេរសម្រាយបែបនេះបើ Sub Account មានប៉ុន្មានជាន់ត្រូវសរសរ Map ច្រើជាន់តាមដែល) ====================
                     // const balanceSheetTest = async (accountType: Array<string>, start_date: string, end_date: string) => {
 
                     //     //@Parent Account, we need it becasue it already have tree data form
@@ -87,8 +92,9 @@ const reportResolver = {
                     // }
 
 
-                //================================ Test Another Style ========================================
-            
+                //================================ ការសរសេរសម្រាយ ========================================
+
+                //==================== សរសេរបែប RECURSIVE Function ទោះ sub-account មានប៉ុន្មានជាន់ក៏កូដនៅតែប៉ុណ្ណឹងដដែល មិនចាំបាច់សរសេរ map ច្រើនជាន់តាម (ល្បឿនកូដដូចគ្នានឹងសរសេរសម្រាយ) ====================
                 const balanceSheet = async (accountType: Array<string>, start_date: string, end_date: string) => {
 
                     // const last_month_to_date = moment(end_date).subtract(1, 'months').format("YYYY-MM-DD")
@@ -184,7 +190,12 @@ const reportResolver = {
                 //@===================== find Retained Earning from income statment report ===================
                 // const endpoint = 'http://localhost:4400/graphql';
                 const endpoint = process.env.OWN_ENDPOINT;
-                const schema = gql`
+                let graphQLClient = new GraphQLClient(endpoint, {
+                    headers: {
+                      authorization: req.headers.authorization,
+                    },
+                })
+                const query = gql`
                 query IncomeStatementReport($departmentId: String, $fromDate: Date, $toDate: Date, $form: String) {
                     incomeStatementReport(department_id: $departmentId, fromDate: $fromDate, toDate: $toDate, form: $form) {
                         netIncome {
@@ -198,11 +209,10 @@ const reportResolver = {
                     toDate: curr_month_to_date,
                     form: "1"  
                 }
-                const currMonthNetIncome: any = await request({
-                    url: endpoint,
-                    document: schema,
+
+                const currMonthNetIncome: any = await graphQLClient.request({
+                    document: query,
                     variables: variablesCurrMonth,
-                    // requestHeaders,
                   })
                 const variablesLastMonth = {
                     departmentId: "64a52c65ad409eb75c87d8e1", //All department Id
@@ -210,14 +220,11 @@ const reportResolver = {
                     toDate: last_month_to_date,
                     form: "1"  
                 }
-                const lastMonthNetIncome: any = await request({
-                    url: endpoint,
-                    document: schema,
+                const lastMonthNetIncome: any = await graphQLClient.request({
+                    document: query,
                     variables: variablesLastMonth,
-                    // requestHeaders,
                 })
-                // console.log(currMonthNetIncome, "currMonthNetIncome")
-                // console.log(lastMonthNetIncome, "lastMonthNetIncome")
+
                 if(currMonthNetIncome && lastMonthNetIncome){
                     getBalanceSheetEquity.push({
                         account_name: "Retained Earning",
@@ -272,8 +279,13 @@ const reportResolver = {
 
             }
         },
-        incomeStatementReport: async (_root: undefined, { department_id, fromDate, toDate, form }: { department_id: string, fromDate: string, toDate: string, form: string }) => {
+        incomeStatementReport: async (_root: undefined, { department_id, fromDate, toDate, form }: { department_id: string, fromDate: string, toDate: string, form: string }, {req}:{req: any}) => {
             try {
+            
+                const currentUser = await AuchCheck(req)
+                if (!currentUser.status){
+                  return new Error(currentUser.message);
+                }
                 let selected_date = {}
                 let year_to_date = {}
                 if (fromDate && toDate) {
@@ -666,8 +678,13 @@ const reportResolver = {
 
             }
         },
-        generalLedgerReport: async (_root: undefined, { fromDate, toDate }: { fromDate: string, toDate: string }) => {
+        generalLedgerReport: async (_root: undefined, { fromDate, toDate }: { fromDate: string, toDate: string }, {req}:{req: any}) => {
             try {
+                const currentUser = await AuchCheck(req)
+                if (!currentUser.status){
+                  return new Error(currentUser.message);
+                }
+
                 let selected_date = {}
                 if (fromDate && toDate) {
                     const startDate = new Date(`${fromDate}T00:00:00.000Z`)
@@ -825,9 +842,13 @@ const reportResolver = {
         },
     },
     Mutation: {
-        closeReport: async(_root: undefined, {dateTime}:{dateTime: string})=>{
+        closeReport: async(_root: undefined, {dateTime}:{dateTime: string}, {req}:{req: any})=>{
             try {
-            
+                const currentUser = await AuchCheck(req)
+                if (!currentUser.status){
+                  return new Error(currentUser.message);
+                }
+                
                 const closeDate = new Date(`${dateTime}T16:59:59.999Z`)
  
                 const updateJournal = await GeneralJournal.updateMany(

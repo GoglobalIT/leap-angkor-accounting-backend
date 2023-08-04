@@ -5,12 +5,17 @@ import {paginationLabel} from "../../functions/paginationLabel"
 import mongoose from 'mongoose'; 
 import AuthAdmin from '../../config/AuthAdmin'
 import '../../config/keyService.json'
-import { HTML5_FMT } from "moment";
+
 
 const userResolver = {
   Query: {
-    getUserById: async (_root: undefined, {_id}:{_id: String}) => {
+    getUserById: async (_root: undefined, {_id}:{_id: String}, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const getById = await User.findById(_id).populate('company')
        
         return getById
@@ -21,10 +26,10 @@ const userResolver = {
     getUserLogin: async(_root: undefined, {}, {req}:{req: any}) => {
         try {
           const currentUser = await AuchCheck(req)
-          
           if (!currentUser.status){
             return new Error(currentUser.message);
           }
+
           const user = await User.findById(currentUser.user.user_id); 
           return user
 
@@ -35,9 +40,12 @@ const userResolver = {
             }
         }
     },
-    getUserWithPagination: async (_root: undefined, {page, limit, keyword, pagination}: {page: number, limit: number, keyword: string, pagination: boolean})=>{
+    getUserWithPagination: async (_root: undefined, {page, limit, keyword, pagination}: {page: number, limit: number, keyword: string, pagination: boolean}, {req}:{req: any})=>{
       try {
-    
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
         const options = {
           page: page || 1,
           limit: limit || 10,
@@ -65,8 +73,13 @@ const userResolver = {
     }
   },
   Mutation: {
-    createUser: async (_root: undefined, { input }: { input: iUser }) => {
+    createUser: async (_root: undefined, { input }: { input: iUser }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const isExisting = await User.findOne({user_email: input.user_email})
         if(isExisting){
           return {
@@ -103,9 +116,13 @@ const userResolver = {
       }
     
     },
-    updateUser: async (_root: undefined, { _id, input }: { _id: String, input: iUser }) => {
+    updateUser: async (_root: undefined, { _id, input }: { _id: String, input: iUser }, {req}:{req: any}) => {
       try {
-        console.log(input, "input")
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const isExisting = await User.findOne({$and:[
           {user_email: input.user_email},
           {_id: {$ne: _id}}
@@ -144,8 +161,13 @@ const userResolver = {
         }
       }
     },
-    deleteUser: async (_root: undefined, { _id }: { _id: string },) => {
+    deleteUser: async (_root: undefined, { _id }: { _id: string }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const isDeleted = await User.findByIdAndDelete(_id);
         if (!isDeleted) {
           return {
@@ -171,8 +193,13 @@ const userResolver = {
         }
       }
     },
-    assignDepartment: async(_root: undefined, { user_id, department_id}:{ user_id: string, department_id: string }) => {
+    assignDepartment: async(_root: undefined, { user_id, department_id}:{ user_id: string, department_id: string }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+
         const pushDepartment = await User.updateOne(
           {_id: user_id},
           {$push: {departments_access: department_id}}
@@ -191,8 +218,13 @@ const userResolver = {
         
       }
     },
-    deleteAssignedDepartment: async(_root: undefined, { user_id, department_id}:{ user_id: string, department_id: string }) => {
+    deleteAssignedDepartment: async(_root: undefined, { user_id, department_id}:{ user_id: string, department_id: string }, {req}:{req: any}) => {
       try {
+        const currentUser = await AuchCheck(req)
+        if (!currentUser.status){
+          return new Error(currentUser.message);
+        }
+        
         const pullDepartment = await User.updateOne(
           {_id: user_id},
           {$pull: {departments_access: department_id}}
