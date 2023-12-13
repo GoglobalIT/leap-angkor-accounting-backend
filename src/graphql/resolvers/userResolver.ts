@@ -25,12 +25,15 @@ const userResolver = {
     },
     getUserLogin: async(_root: undefined, {}, {req}:{req: any}) => {
         try {
+          // console.log(req, "req");
           const currentUser = await AuchCheck(req)
+          console.log(currentUser, "currentUser");
           if (!currentUser.status){
             return new Error(currentUser.message);
           }
 
           const user = await User.findById(currentUser.user.user_id); 
+          console.log(user, "user");
           return user
 
         } catch (error) {
@@ -73,6 +76,31 @@ const userResolver = {
     }
   },
   Mutation: {
+    login: async(_root: undefined, {email, password}:{email: string, password: string})=>{
+      try {
+        const getLogin: any = await AuthAdmin.login(email, password);
+     
+        if(getLogin.status===true){
+          const getUser = await User.findById(getLogin.user.user_id)
+          return{
+            is_success: getLogin.status,
+            message: getLogin.message,
+            token: getLogin.token,
+            data: getUser,
+          }
+        }else{
+          return{
+            is_success: getLogin.status,
+            message: getLogin.message,
+            token: null,
+            data: null,
+          }
+        }
+       
+      } catch (error) {
+        
+      }
+    },
     createUser: async (_root: undefined, { input }: { input: iUser }, {req}:{req: any}) => {
       try {
         const currentUser = await AuchCheck(req)

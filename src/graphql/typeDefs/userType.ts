@@ -21,6 +21,12 @@ const userType = `#graphql
     data: [User]
     paginator: Paginator
   }
+  type UserResponseMessage{
+    is_success: Boolean
+    message: String
+    token: String
+    data: User
+  }
   input UserInput {
     user_first_name: String
     user_last_name: String
@@ -39,6 +45,7 @@ const userType = `#graphql
     getUserWithPagination(page: Int, limit: Int, keyword: String, pagination: Boolean): UserPaginator
   }
   type Mutation {
+    login(email: String, password: String): UserResponseMessage
     createUser(input: UserInput): ResponseMessage
     updateUser(_id: ID!, input: UserInput): ResponseMessage
     deleteUser(_id: ID!): ResponseMessage

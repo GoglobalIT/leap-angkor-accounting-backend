@@ -229,5 +229,61 @@ class Goglobalauth {
             };
         }
     }
+    async refreshToken(user_id) {
+        const verifyToken = await (0, axios_1.default)({
+            method: 'post',
+            url: this.url + "/auth/refreshToken",
+            data: {
+                app: this.app,
+                user_id
+            }
+        });
+        if (verifyToken.data.status) {
+            return {
+                message: "Refresh token Success!",
+                status: true,
+            };
+        }
+        else {
+            return {
+                message: "Refresh token failed",
+                status: false,
+            };
+        }
+    }
+    async login(email, password) {
+        try {
+            const user = await (0, axios_1.default)({
+                method: 'post',
+                url: this.url + "/auth/login",
+                data: {
+                    email,
+                    password,
+                    app: this.app
+                }
+            });
+            if (user.data.status) {
+                return {
+                    message: user.data.message,
+                    status: true,
+                    token: user.data.token,
+                    user: user.data.user
+                };
+            }
+            {
+                return {
+                    message: user.data.message,
+                    status: false,
+                    token: ""
+                };
+            }
+        }
+        catch (error) {
+            return {
+                message: error.message,
+                status: false,
+            };
+        }
+    }
 }
 exports.default = Goglobalauth;
