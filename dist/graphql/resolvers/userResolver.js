@@ -27,12 +27,10 @@ const userResolver = {
         getUserLogin: async (_root, {}, { req }) => {
             try {
                 const currentUser = await (0, AuchCheck_1.default)(req);
-                console.log(currentUser, "currentUser");
                 if (!currentUser.status) {
                     return new Error(currentUser.message);
                 }
                 const user = await user_1.default.findById(currentUser.user.user_id);
-                console.log(user, "user");
                 return user;
             }
             catch (error) {
@@ -77,6 +75,14 @@ const userResolver = {
                 const getLogin = await AuthAdmin_1.default.login(email, password);
                 if (getLogin.status === true) {
                     const getUser = await user_1.default.findById(getLogin.user.user_id);
+                    if (!getUser) {
+                        return {
+                            is_success: false,
+                            message: "Login failed! User not found.",
+                            token: null,
+                            data: null,
+                        };
+                    }
                     return {
                         is_success: getLogin.status,
                         message: getLogin.message,

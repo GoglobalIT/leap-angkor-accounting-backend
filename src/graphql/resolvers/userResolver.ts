@@ -25,15 +25,15 @@ const userResolver = {
     },
     getUserLogin: async(_root: undefined, {}, {req}:{req: any}) => {
         try {
-          // console.log(req, "req");
+         
           const currentUser = await AuchCheck(req)
-          console.log(currentUser, "currentUser");
+         
           if (!currentUser.status){
             return new Error(currentUser.message);
           }
 
           const user = await User.findById(currentUser.user.user_id); 
-          console.log(user, "user");
+        
           return user
 
         } catch (error) {
@@ -82,6 +82,14 @@ const userResolver = {
      
         if(getLogin.status===true){
           const getUser = await User.findById(getLogin.user.user_id)
+          if(!getUser){
+            return{
+              is_success: false,
+              message: "Login failed! User not found.",
+              token: null,
+              data: null,
+            }
+          }
           return{
             is_success: getLogin.status,
             message: getLogin.message,
