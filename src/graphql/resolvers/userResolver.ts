@@ -78,6 +78,7 @@ const userResolver = {
   Mutation: {
     login: async(_root: undefined, {email, password}:{email: string, password: string})=>{
       try {
+        console.log(email, password);
         const getLogin: any = await AuthAdmin.login(email, password);
      
         if(getLogin.status===true){
